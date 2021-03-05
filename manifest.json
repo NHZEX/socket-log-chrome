@@ -1,0 +1,46 @@
+{
+  "manifest_version": 2,
+  "name": "SocketLog++",
+  "version": "2018.0.2",
+  "description": "SocketLogPlus By NHZEX",
+  "icons": {
+    "16": "image/logo_16.png",
+    "32": "image/logo_32.png",
+    "64": "image/logo_64.png",
+    "128": "image/logo_128.png",
+    "320": "image/logo_320.png"
+  },
+  "browser_action": {
+    "default_icon": "image/logo_64.png",
+    "default_popup": "popup.html",
+    "default_title": "SocketLog++"
+  },
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "print_log.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "permissions": [
+    "webRequest",
+    "webRequestBlocking",
+    "tabs",
+    "notifications",
+    "http://*/*",
+    "https://*/*"
+  ]
+}

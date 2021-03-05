@@ -36,7 +36,7 @@ header {
 }
 
 header h1 {
-    margin: 4px 0px 0px 0px;
+    margin: 4px 0 0 0;
 }
 
 header img {
@@ -57,9 +57,9 @@ header img {
 }
 
 p {
-    margin: 0px 0px 20px 0px;
+    margin: 0 0 20px 0;
     color: #888;
-    padding: 0px;
+    padding: 0;
 }
 
 input {

@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "SocketLog++",
-  "version": "2018.0.2",
-  "description": "SocketLogPlus By NHZEX",
+  "version": "2.0.0",
+  "description": "SocketLog++",
   "icons": {
     "16": "image/logo_16.png",
     "32": "image/logo_32.png",

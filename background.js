@@ -296,6 +296,13 @@ ws_init();
 
 chrome.webRequest.onBeforeSendHeaders.addListener(
     function (details) {
+        let open = localStorage.getItem('open')
+
+        if (open === 'false' || open === null) {
+            return {
+                requestHeaders: details.requestHeaders
+            };
+        }
 
         let client_id = localStorage.getItem('client_id');
         if (!client_id) {

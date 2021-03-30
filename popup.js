@@ -5,10 +5,10 @@
 document.addEventListener('DOMContentLoaded', init, false);
 
 chrome.runtime.onMessage.addListener(function (request) {
-    if('object' !== typeof request) {
+    if ('object' !== typeof request) {
         return false;
     }
-    if('update_running_message' === request.event) {
+    if ('update_running_message' === request.event) {
         update_status();
     }
 });

@@ -32,11 +32,11 @@ function load_listen_address() {
 
 function set_running_state(message) {
     localStorage.setItem('running_message', message);
-    try{
+    try {
         chrome.runtime.sendMessage({
             'event': 'update_running_message',
         });
-    }catch (e) {
+    } catch (e) {
         console.info('sendMessage update_running_message fail')
     }
 }
@@ -69,9 +69,10 @@ function ws_init() {
 
     if (ws) {
         //避免重复监听
-        ws.onclose = () => {}; //onclose 函数置空，防止重复链接
+        ws.onclose = () => {
+        }; //onclose 函数置空，防止重复链接
         // 如果 websocket 未关闭则关闭链接
-        if(WebSocket.CLOSED !== ws.readyState) {
+        if (WebSocket.CLOSED !== ws.readyState) {
             ws.close();
         }
     }
@@ -153,7 +154,8 @@ function ws_message_handle(event) {
     } catch (e) {
         badge_error_bright();
         if (0 === event.data.indexOf('close:')) {
-            ws.onclose = () => {}; //onclose 函数置空，防止重复链接
+            ws.onclose = () => {
+            }; //onclose 函数置空，防止重复链接
 
             let opt = {
                 type: "basic",
@@ -215,7 +217,7 @@ function ws_message_handle(event) {
     }
 
     // 延迟保证日志每次都能记录
-    if(result.tabid) {
+    if (result.tabid) {
         setTimeout(function () {
             check_error();
             chrome.tabs.sendMessage(parseInt(result.tabid), result.logs, (results) => {
@@ -303,11 +305,9 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
         let header = `tabid=${details.tabId}&client_id=${client_id}`;
 
         //将Header隐藏在User-Agent中， 不能使用自定义Header了， 不让HTTPS情况下会报不安全
-        for (let i = 0; i < details.requestHeaders.length; ++i)
-        {
-            if (details.requestHeaders[i].name === 'User-Agent')
-            {
-                details.requestHeaders[i].value+=" SocketLog("+header+")";
+        for (let i = 0; i < details.requestHeaders.length; ++i) {
+            if (details.requestHeaders[i].name === 'User-Agent') {
+                details.requestHeaders[i].value += " SocketLog(" + header + ")";
                 break;
             }
         }

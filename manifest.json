@@ -1,29 +1,29 @@
 {
   "manifest_version": 2,
   "name": "SocketLog++",
-  "version": "2.0.1",
+  "version": "0.0.1",
   "description": "SocketLog++",
   "icons": {
-    "16": "image/logo_16.png",
-    "32": "image/logo_32.png",
-    "64": "image/logo_64.png",
-    "128": "image/logo_128.png",
-    "320": "image/logo_320.png"
+    "16": "static/images/logo_16.png",
+    "32": "static/images/logo_32.png",
+    "64": "static/images/logo_64.png",
+    "128": "static/images/logo_128.png",
+    "320": "static/images/logo_320.png"
   },
   "browser_action": {
-    "default_icon": "image/logo_64.png",
-    "default_popup": "static/page/popup.html",
+    "default_icon": "static/images/logo_64.png",
+    "default_popup": "popup.html",
     "default_title": "SocketLog++"
   },
   "background": {
     "scripts": [
-      "static/js/background.js"
+      "background/index.js"
     ]
   },
   "content_scripts": [
     {
       "js": [
-        "static/js/print_log.js"
+        "content/index.js"
       ],
       "matches": [
         "<all_urls>"
@@ -32,7 +32,7 @@
     }
   ],
   "options_ui": {
-    "page": "static/page/options.html",
+    "page": "options.html",
     "open_in_tab": true
   },
   "permissions": [

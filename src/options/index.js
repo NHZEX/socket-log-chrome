@@ -1,3 +1,5 @@
+import 'src/assets/style/options.css'
+
 document.addEventListener('DOMContentLoaded', init, false);
 
 function init() {

@@ -12,11 +12,28 @@
   },
   "devDependencies": {
     "@types/chrome": "^0.0.133",
+    "clean-webpack-plugin": "^4.0.0-alpha.0",
+    "copy-webpack-plugin": "^9.0.0",
+    "css-loader": "^5.2.5",
     "html-webpack-plugin": "^5.3.1",
+    "style-loader": "^2.0.0",
     "webpack": "^5.37.1",
     "webpack-cli": "^4.7.0"
   },
   "scripts": {
     "build": "webpack"
-  }
+  },
+  "browserslist": [
+    "defaults",
+    "not IE 11",
+    "not op_mini all",
+    "not kaios < 999",
+    "not and_qq < 999",
+    "not and_uc < 999",
+    "not baidu < 999",
+    "not ios_saf < 999",
+    "not op_mob < 999",
+    "not safari < 999",
+    "not samsung < 999"
+  ]
 }

@@ -11,9 +11,9 @@ let listen = {
     port: '1229',
 };
 
-const IMG_LOGO = 'image/logo_320.png';
-const IMG_LOGO_X16 = 'image/logo_16.png';
-const IMG_LOGO_DISABLED_X16 = 'image/logo_disabled_16.png';
+const IMG_LOGO = require('src/assets/image/logo_320.png');
+const IMG_LOGO_X16 = require('src/assets/image/logo_16.png');
+const IMG_LOGO_DISABLED_X16 = require('src/assets/image/logo_disabled_16.png');
 
 // 下标两/灭
 const BADGE_BRIGHT = ' ';
@@ -227,11 +227,6 @@ function ws_message_handle(event) {
     }
 }
 
-function ws_restart() {
-    ws_init();
-}
-
-
 function enable_icon() {
     chrome.browserAction.setIcon({
         path: IMG_LOGO_X16,
@@ -293,6 +288,10 @@ function url_exp(url) {
 }
 
 ws_init();
+
+window.ws_restart = function () {
+    ws_init();
+}
 
 chrome.webRequest.onBeforeSendHeaders.addListener(
     function (details) {

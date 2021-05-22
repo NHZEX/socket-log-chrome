@@ -53,7 +53,7 @@ if (process.env.npm_config_report) {
 
 module.exports = {
     mode: 'production',
-    devtool: 'cheap-module-source-map',
+    devtool: 'inline-source-map',
     target: 'web',
     entry: {
         background: './src/background/index.js',

@@ -3,6 +3,8 @@ const fs = require('fs');
 const HtmlPlugin = require('html-webpack-plugin');
 const CleanPlugin = require('clean-webpack-plugin').CleanWebpackPlugin;
 const CopyPlugin = require('copy-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const VueLoaderPlugin = require('vue-loader').VueLoaderPlugin;
 
 const packageJson = JSON.parse(fs.readFileSync(path.resolve('./package.json')).toString())
 
@@ -10,6 +12,44 @@ const src_dir = path.resolve(__dirname, 'src')
 const dist_dir = path.resolve(__dirname, 'dist')
 
 // const pages = {}
+
+const plugins = [
+    new VueLoaderPlugin(),
+    new CleanPlugin(),
+    new CopyPlugin({
+        patterns: [
+            {
+                from: 'src/assets/image/logo_*.png',
+                to: 'static/images/[name][ext]',
+            },
+            {
+                from: "manifest.json",
+                to: dist_dir + "/manifest.json",
+                transform: {
+                    transformer(content) {
+                        let manifest = JSON.parse(content.toString());
+                        manifest.version = packageJson.version
+                        return Buffer.from(JSON.stringify(manifest, null, 2));
+                    },
+                },
+            },
+        ]
+    }),
+    new HtmlPlugin({
+        filename: 'popup.html',
+        template: './src/popup/index.ejs',
+        chunks: ['popup'],
+    }),
+    new HtmlPlugin({
+        filename: 'options.html',
+        template: './src/options/index.ejs',
+        chunks: ['options'],
+    }),
+]
+
+if (process.env.npm_config_report) {
+    plugins.push(new BundleAnalyzerPlugin())
+}
 
 module.exports = {
     mode: 'production',
@@ -30,10 +70,21 @@ module.exports = {
     resolve: {
         alias: {
             src: src_dir,
+            '@': src_dir,
+            '$vue': 'vue/dist/vue.runtime.esm-bundler.js',
         }
     },
     module: {
         rules: [
+            {
+                test: /\.js$/,
+                exclude: /node_modules/,
+                use: ['babel-loader'],
+            },
+            {
+                test: /\.vue$/,
+                loader: 'vue-loader'
+            },
             {
                 test: /\.css$/i,
                 use: ['style-loader', 'css-loader'],
@@ -54,36 +105,5 @@ module.exports = {
             },
         ],
     },
-    plugins: [
-        new CleanPlugin(),
-        new CopyPlugin({
-            patterns: [
-                {
-                    from: 'src/assets/image/logo_*.png',
-                    to: 'static/images/[name][ext]',
-                },
-                {
-                    from: "manifest.json",
-                    to: dist_dir + "/manifest.json",
-                    transform: {
-                        transformer(content) {
-                            let manifest = JSON.parse(content.toString());
-                            manifest.version = packageJson.version
-                            return Buffer.from(JSON.stringify(manifest, null, 2));
-                        },
-                    },
-                },
-            ]
-        }),
-        new HtmlPlugin({
-            filename: 'popup.html',
-            template: './src/popup/index.ejs',
-            chunks: ['popup'],
-        }),
-        new HtmlPlugin({
-            filename: 'options.html',
-            template: './src/options/index.ejs',
-            chunks: ['options'],
-        }),
-    ]
+    plugins: plugins,
 };

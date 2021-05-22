@@ -8,20 +8,29 @@
     "yarn": ">=1"
   },
   "dependencies": {
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "vue": "^3.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.14.3",
+    "@babel/preset-env": "^7.14.2",
     "@types/chrome": "^0.0.133",
+    "@vue/compiler-sfc": "^3.0.11",
+    "babel-loader": "^8.2.2",
     "clean-webpack-plugin": "^4.0.0-alpha.0",
     "copy-webpack-plugin": "^9.0.0",
+    "cross-env": "^7.0.3",
     "css-loader": "^5.2.5",
     "html-webpack-plugin": "^5.3.1",
     "style-loader": "^2.0.0",
+    "vue-loader": "^16.2",
     "webpack": "^5.37.1",
+    "webpack-bundle-analyzer": "^4.4.2",
     "webpack-cli": "^4.7.0"
   },
   "scripts": {
-    "build": "webpack"
+    "build": "webpack",
+    "analyz": "cross-env npm_config_report=true yarn run webpack"
   },
   "browserslist": [
     "defaults",

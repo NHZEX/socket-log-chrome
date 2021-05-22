@@ -6,30 +6,6 @@
     <title></title>
 </head>
 <body>
-<div class="wrapper clearfix">
-    <div class="title">
-        SocketLog 设置 （状态：<span id="status">正在连接...</span>）
-        <div class="help">
-            <a href="https://github.com/NHZEX/socket-log-chrome" title="帮助" target="_blank">
-                <img src="<%= require('src/assets/image/help_16.png') %>" alt="help"/>
-            </a>
-        </div>
-    </div>
-    <form action="">
-        <div style="float: left">
-            监听协议： <input id="protocol" value="ws" title="监听协议"/> <br />
-            监听主机： <input id="host" value="localhost" title="监听主机"/> <br />
-            监听端口： <input id="port" value="1229" title="监听端口"/> <br />
-            监听地址： <input id="address" value="ws://localhost:1229" title="监听地址" readonly style="background-color: rgba(66,66,66,0.5)"/> <br/>
-            ClientID： <input id="client_id" value="" title="客户ID"/> <br/>
-        </div>
-        <div>
-            开启：<input type="checkbox" id="open" title="服务开关"><br />
-            <button type="button" id="save">保 存</button>
-        </div>
-    </form>
-    <div>
-    </div>
-</div>
+<div id="app"></div>
 </body>
 </html>

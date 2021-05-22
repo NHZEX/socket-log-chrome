@@ -1,4 +1,10 @@
 import 'src/assets/style/popup.css'
+
+import { createApp } from 'vue'
+import App from './App.vue'
+
+createApp(App).mount('#app')
+
 /**
  * github: https://github.com/luofei614/SocketLog
  * @author luofei614<weibo.com/luofei614>
@@ -53,6 +59,18 @@ function init() {
     update_status();
 
     document.getElementById('save').addEventListener('click', save, false);
+
+    // 创建没有构造函数的类属性
+    class Game {
+        name = 'Violin Charades'
+    }
+    const myGame = new Game()
+// 创建 p 节点
+    const p = document.createElement('p')
+    p.textContent = `I like ${myGame.name}.`
+
+    const heading = document.createElement('h1')
+    heading.textContent = 'Interesting!'
 }
 
 function save() {

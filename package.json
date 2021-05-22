@@ -1,5 +1,22 @@
 {
+  "name": "socketlog-plus",
+  "version": "2.0.1",
+  "private": true,
+  "engines": {
+    "node": ">= 12.10",
+    "npm": ">=6",
+    "yarn": ">=1"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
+  },
   "devDependencies": {
-    "@types/chrome": "^0.0.133"
+    "@types/chrome": "^0.0.133",
+    "html-webpack-plugin": "^5.3.1",
+    "webpack": "^5.37.1",
+    "webpack-cli": "^4.7.0"
+  },
+  "scripts": {
+    "build": "webpack"
   }
 }

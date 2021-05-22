@@ -12,18 +12,18 @@
   },
   "browser_action": {
     "default_icon": "image/logo_64.png",
-    "default_popup": "popup.html",
+    "default_popup": "static/page/popup.html",
     "default_title": "SocketLog++"
   },
   "background": {
     "scripts": [
-      "background.js"
+      "static/js/background.js"
     ]
   },
   "content_scripts": [
     {
       "js": [
-        "print_log.js"
+        "static/js/print_log.js"
       ],
       "matches": [
         "<all_urls>"
@@ -32,7 +32,7 @@
     }
   ],
   "options_ui": {
-    "page": "options.html",
+    "page": "static/page/options.html",
     "open_in_tab": true
   },
   "permissions": [

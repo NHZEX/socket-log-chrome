@@ -3,13 +3,13 @@
  * @author luofei614<weibo.com/luofei614>
  * console print log
  */
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if ('object' !== typeof (request)) {
-        console.warn('socketlog', 'invalid content', request);
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if ('object' !== typeof (message)) {
+        console.warn('socketlog', 'invalid content', message);
         sendResponse('not object');
         return;
     }
-    request.forEach(function (log) {
+    message.forEach(function (log) {
         if (console[log.type]) {
             if (log.css) {
                 console[log.type]('%c' + log.msg, log.css);

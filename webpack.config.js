@@ -71,7 +71,6 @@ module.exports = {
         alias: {
             src: src_dir,
             '@': src_dir,
-            '$vue': 'vue/dist/vue.runtime.esm-bundler.js',
         }
     },
     module: {

@@ -56,3 +56,9 @@ export function badge_error_destroy() {
         'text': BADGE_DESTROY,
     });
 }
+
+export function restartConnection() {
+    if (chrome.extension) {
+        chrome.extension.getBackgroundPage().restart();
+    }
+}

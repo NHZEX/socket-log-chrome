@@ -35,6 +35,7 @@
 import { reactive, computed, onMounted } from 'vue'
 import { useStore, mapState } from 'vuex'
 import { isObject } from 'lodash'
+import { restartConnection } from 'src/helper'
 
 export default {
   name: 'App',
@@ -70,15 +71,12 @@ export default {
       }
       if ('update_status' === message.event) {
         store.commit('updateState', message.data.message)
-        //store.dispatch('syncStatusMessage')
       }
     }
 
     const onSave = () => {
       store.dispatch('saveStorageData')
-      if (isChrome) {
-        chrome.extension.getBackgroundPage().restart();
-      }
+      restartConnection();
     }
 
     onMounted(() => {

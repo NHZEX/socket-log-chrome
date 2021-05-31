@@ -69,7 +69,8 @@ export default {
         return false;
       }
       if ('update_status' === message.event) {
-        store.dispatch('syncStatusMessage')
+        store.commit('updateState', message.data.message)
+        //store.dispatch('syncStatusMessage')
       }
     }
 
@@ -81,7 +82,6 @@ export default {
     }
 
     onMounted(() => {
-      store.dispatch('syncStatusMessage')
       if (isChrome) {
         chrome.runtime.onMessage.addListener(onMessage);
       }

@@ -14,7 +14,10 @@ function set_running_state(message) {
     localStorage.setItem('status_message', message);
     try {
         chrome.runtime.sendMessage({
-            'event': 'update_status',
+            event: 'update_status',
+            data: {
+                message: message,
+            }
         });
     } catch (e) {
         console.info('sendMessage update_status fail')
@@ -76,11 +79,11 @@ class Client {
 
         this.ws.onerror = (msg) => {
             console.warn('websocket: ', msg)
-            this.#onError()
+            this.#onClone('服务连接失败')
         };
 
         this.ws.onclose = () => {
-            this.#onClone()
+            this.#onClone('服务已经关闭')
         };
 
         this.ws.onopen = () => {
@@ -179,21 +182,12 @@ class Client {
         }
     }
 
-    #onClone () {
+    #onClone (stateMessage) {
         clearTimeout(this.#ws_timeout);
         this.#ws_timeout = setTimeout(() => {
             this.init()
         }, 2000);
-        set_running_state('服务已经关闭');
-        disable_icon();
-    }
-
-    #onError () {
-        clearTimeout(this.#ws_timeout);
-        this.#ws_timeout = setTimeout(() => {
-            this.init()
-        }, 2000);
-        set_running_state('服务连接失败');
+        set_running_state(stateMessage);
         disable_icon();
     }
 

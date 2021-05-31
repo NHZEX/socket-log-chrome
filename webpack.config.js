@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const webpack = require('webpack');
 const HtmlPlugin = require('html-webpack-plugin');
 const CleanPlugin = require('clean-webpack-plugin').CleanWebpackPlugin;
 const CopyPlugin = require('copy-webpack-plugin');
@@ -14,6 +15,9 @@ const dist_dir = path.resolve(__dirname, 'dist')
 // const pages = {}
 
 const plugins = [
+    new webpack.DefinePlugin({
+        __VUE_PROD_DEVTOOLS__: true,
+    }),
     new VueLoaderPlugin(),
     new CleanPlugin(),
     new CopyPlugin({
@@ -29,6 +33,9 @@ const plugins = [
                     transformer(content) {
                         let manifest = JSON.parse(content.toString());
                         manifest.version = packageJson.version
+                        if (process.env.NODE_ENV === 'development') {
+                            manifest.content_security_policy = "script-src 'self' 'unsafe-eval'; object-src 'self';"
+                        }
                         return Buffer.from(JSON.stringify(manifest, null, 2));
                     },
                 },
@@ -52,7 +59,7 @@ if (process.env.npm_config_report) {
 }
 
 module.exports = {
-    mode: 'production',
+    mode: process.env.NODE_ENV || 'production',
     devtool: 'inline-source-map',
     target: 'web',
     entry: {

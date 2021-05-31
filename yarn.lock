@@ -1514,7 +1514,7 @@ core-js-compat@^3.9.0, core-js-compat@^3.9.1:
 
 cross-env@^7.0.3:
   version "7.0.3"
-  resolved "https://registry.npm.taobao.org/cross-env/download/cross-env-7.0.3.tgz#865264b29677dc015ba8418918965dd232fc54cf"
+  resolved "https://registry.nlark.com/cross-env/download/cross-env-7.0.3.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fcross-env%2Fdownload%2Fcross-env-7.0.3.tgz#865264b29677dc015ba8418918965dd232fc54cf"
   integrity sha1-hlJkspZ33AFbqEGJGJZd0jL8VM8=
   dependencies:
     cross-spawn "^7.0.1"
@@ -2993,6 +2993,11 @@ vue@^3.0:
     "@vue/compiler-dom" "3.0.11"
     "@vue/runtime-dom" "3.0.11"
     "@vue/shared" "3.0.11"
+
+vuex@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.nlark.com/vuex/download/vuex-4.0.0.tgz#ac877aa76a9c45368c979471e461b520d38e6cf5"
+  integrity sha1-rId6p2qcRTaMl5Rx5GG1INOObPU=
 
 watchpack@^2.0.0:
   version "2.2.0"

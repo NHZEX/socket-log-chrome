@@ -28,11 +28,11 @@ class Client {
     address = {
         tls: false,
         host: 'localhost',
-        port: '1229',
+        port: 1229,
     };
 
     ws = null
-    #ws_timeout = 0
+    #reconnectionTimer = 0
 
     constructor () {}
 
@@ -183,8 +183,8 @@ class Client {
     }
 
     #onClone (stateMessage) {
-        clearTimeout(this.#ws_timeout);
-        this.#ws_timeout = setTimeout(() => {
+        clearTimeout(this.#reconnectionTimer);
+        this.#reconnectionTimer = setTimeout(() => {
             this.init()
         }, 2000);
         set_running_state(stateMessage);

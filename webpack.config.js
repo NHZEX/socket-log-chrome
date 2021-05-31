@@ -60,7 +60,7 @@ if (process.env.npm_config_report) {
 
 module.exports = {
     mode: process.env.NODE_ENV || 'production',
-    devtool: 'inline-source-map',
+    devtool: process.env.NODE_ENV === 'production' ? false : 'inline-source-map',
     target: 'web',
     entry: {
         background: './src/background/index.js',

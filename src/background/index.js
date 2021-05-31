@@ -1,10 +1,14 @@
-const IMG_LOGO = require('src/assets/image/logo_320.png');
-const IMG_LOGO_X16 = require('src/assets/image/logo_16.png');
-const IMG_LOGO_DISABLED_X16 = require('src/assets/image/logo_disabled_16.png');
+import { initRequestListener } from './RequestHandle'
+import {
+    enable_icon,
+    disable_icon,
+    badge_normal_bright,
+    badge_normal_destroy,
+    badge_error_bright,
+    badge_error_destroy
+} from 'src/helper'
 
-// 下标两/灭
-const BADGE_BRIGHT = ' ';
-const BADGE_DESTROY = '';
+const IMG_LOGO = require('src/assets/image/logo_320.png');
 
 function set_running_state(message) {
     localStorage.setItem('status_message', message);
@@ -52,6 +56,7 @@ class Client {
         }
 
         // 载入监听地址
+        console.log(this)
         this.address = this.getAddress();
         let clientId = localStorage.getItem('client_id');
 
@@ -71,7 +76,7 @@ class Client {
         this.ws = new WebSocket(address);
 
         this.ws.onerror = (msg) => {
-            console.warn('websocket: ' + msg)
+            console.warn('websocket: ', msg)
             this.#onError()
         };
 
@@ -177,14 +182,18 @@ class Client {
 
     #onClone () {
         clearTimeout(this.#ws_timeout);
-        this.#ws_timeout = setTimeout(this.init, 2000);
+        this.#ws_timeout = setTimeout(() => {
+            this.init()
+        }, 2000);
         set_running_state('服务已经关闭');
         disable_icon();
     }
 
     #onError () {
         clearTimeout(this.#ws_timeout);
-        this.#ws_timeout = setTimeout(this.init, 2000);
+        this.#ws_timeout = setTimeout(() => {
+            this.init()
+        }, 2000);
         set_running_state('服务连接失败');
         disable_icon();
     }
@@ -224,58 +233,6 @@ class Client {
     };
 }
 
-function enable_icon() {
-    chrome.browserAction.setIcon({
-        path: IMG_LOGO_X16,
-    });
-}
-
-function disable_icon() {
-    chrome.browserAction.setIcon({
-        path: IMG_LOGO_DISABLED_X16,
-    });
-}
-
-// 正常 角标亮
-function badge_normal_bright() {
-    chrome.browserAction.setBadgeBackgroundColor({
-        'color': '#4477BB'
-    });
-    chrome.browserAction.setBadgeText({
-        'text': BADGE_BRIGHT,
-    });
-}
-
-// 正常 角标灭
-function badge_normal_destroy() {
-    chrome.browserAction.setBadgeBackgroundColor({
-        'color': '#4477BB'
-    });
-    chrome.browserAction.setBadgeText({
-        'text': BADGE_DESTROY,
-    });
-}
-
-// 错误 角标亮
-function badge_error_bright() {
-    chrome.browserAction.setBadgeBackgroundColor({
-        'color': '#FF0000'
-    });
-    chrome.browserAction.setBadgeText({
-        'text': BADGE_BRIGHT,
-    });
-}
-
-// 错误 角标灭
-function badge_error_destroy() {
-    chrome.browserAction.setBadgeBackgroundColor({
-        'color': '#FF0000'
-    });
-    chrome.browserAction.setBadgeText({
-        'text': BADGE_DESTROY,
-    });
-}
-
 function url_exp(url) {
     let splatParam = /\*/g;
     let escapeRegExp = /[-[\]{}()+?.,\\^$#\s]/g;
@@ -291,36 +248,4 @@ window.ws_restart = () => {
     wsc.init()
 }
 
-chrome.webRequest.onBeforeSendHeaders.addListener(
-    function (details) {
-        let open = localStorage.getItem('open')
-
-        if (open === 'false' || open === null) {
-            return {
-                requestHeaders: details.requestHeaders
-            };
-        }
-
-        let client_id = localStorage.getItem('client_id');
-        if (!client_id) {
-            client_id = '';
-        }
-
-        let header = `tabid=${details.tabId}&client_id=${client_id}`;
-
-        //将Header隐藏在User-Agent中， 不能使用自定义Header了， 不让HTTPS情况下会报不安全
-        for (let i = 0; i < details.requestHeaders.length; ++i) {
-            if (details.requestHeaders[i].name === 'User-Agent') {
-                details.requestHeaders[i].value += " SocketLog(" + header + ")";
-                break;
-            }
-        }
-
-        return {
-            requestHeaders: details.requestHeaders
-        };
-    }, {
-        urls: ["<all_urls>"]
-    },
-    ["blocking", "requestHeaders"]
-);
+initRequestListener()

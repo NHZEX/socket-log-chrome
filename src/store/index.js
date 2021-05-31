@@ -16,7 +16,6 @@ export default createStore({
   },
   mutations: {
     updateState (state, message) {
-      console.log(message)
       state.stateMsg = message
     },
     updateAddress (state, address) {

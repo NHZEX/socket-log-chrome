@@ -24,6 +24,20 @@ function set_running_state(message) {
     }
 }
 
+function notifications (title, message, timeout, id) {
+    let opt = {
+        type: "basic",
+        title: title,
+        message: message,
+        iconUrl: IMG_LOGO
+    };
+    chrome.notifications.create(id, opt, (id) => {
+        setTimeout(function () {
+            chrome.notifications.clear(id, () => {});
+        }, timeout);
+    });
+}
+
 class Client {
     address = {
         tls: false,
@@ -158,7 +172,7 @@ class Client {
                 (tabArray) => {
                     if (tabArray.length > 0) {
                         let tab = tabArray.shift();
-                        this.#checkMessage(event);
+                        Client.#checkMessage(event);
                         chrome.tabs.sendMessage(tab.id, result.logs, (results) => {
                             badge_normal_destroy();
                         });
@@ -175,7 +189,7 @@ class Client {
 
         // 延迟保证日志每次都能记录
         if (result.tabid) {
-            this.#checkMessage(event);
+            Client.#checkMessage(event);
             chrome.tabs.sendMessage(parseInt(result.tabid), result.logs, (results) => {
                 badge_normal_destroy();
             });
@@ -191,36 +205,13 @@ class Client {
         disable_icon();
     }
 
-    #checkMessage (event) {
+    static #checkMessage (event) {
         if (event.data.indexOf('SocketLog error handler') !== -1) {
-            let opt = {
-                type: "basic",
-                title: "注意",
-                message: "有异常报错，请注意查看console 控制台中的日志",
-                iconUrl: IMG_LOGO
-            };
-            chrome.notifications.create('notify-socketLog-error-handler', opt, (id) => {
-                setTimeout(function () {
-                    chrome.notifications.clear(id, function () {
-                    });
-                }, 3000);
-            });
-
+            notifications('注意', '有异常报错，请注意查看console 控制台中的日志', 3000, 'notify-socketLog-error-handler')
         }
 
         if (event.data.indexOf('[NO WHERE]') !== -1) {
-            let opt = {
-                type: "basic",
-                title: "注意",
-                message: "存在没有WHERE语句的操作sql语句",
-                iconUrl: IMG_LOGO
-            };
-            chrome.notifications.create('', opt, function (id) {
-                setTimeout(function () {
-                    chrome.notifications.clear(id, function () {
-                    });
-                }, 3000);
-            });
+            notifications('注意', '存在没有WHERE语句的操作sql语句', 3000, '')
         }
 
     };

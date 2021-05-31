@@ -43,8 +43,6 @@ export default {
   setup() {
     const isChrome = chrome.runtime && chrome.extension;
 
-    console.log(chrome.runtime, chrome.extension)
-
     const store = useStore()
     store.dispatch('loadStorageData')
 
@@ -78,7 +76,7 @@ export default {
     const onSave = () => {
       store.dispatch('saveStorageData')
       if (isChrome) {
-        chrome.extension.getBackgroundPage().ws_restart();
+        chrome.extension.getBackgroundPage().restart();
       }
     }
 

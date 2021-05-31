@@ -56,7 +56,6 @@ class Client {
         }
 
         // 载入监听地址
-        console.log(this)
         this.address = this.getAddress();
         let clientId = localStorage.getItem('client_id');
 
@@ -241,11 +240,10 @@ function url_exp(url) {
     return new RegExp(url, 'i');
 }
 
+initRequestListener()
 const wsc = new Client()
 wsc.init()
 
-window.ws_restart = () => {
+window.restart = () => {
     wsc.init()
 }
-
-initRequestListener()

@@ -907,10 +907,10 @@
   resolved "https://registry.npm.taobao.org/@polka/url/download/@polka/url-1.0.0-next.12.tgz#431ec342a7195622f86688bbda82e3166ce8cb28"
   integrity sha1-Qx7DQqcZViL4Zoi72oLjFmzoyyg=
 
-"@types/chrome@^0.0.133":
-  version "0.0.133"
-  resolved "https://registry.npm.taobao.org/@types/chrome/download/@types/chrome-0.0.133.tgz#9e1d55441584ba2d5274ca84db36427da9c5dc6e"
-  integrity sha1-nh1VRBWEui1SdMqE2zZCfanF3G4=
+"@types/chrome@^0.0.268":
+  version "0.0.268"
+  resolved "https://registry.npmmirror.com/@types/chrome/-/chrome-0.0.268.tgz#d5855546f30c83e181cadd77127a162c25b480d2"
+  integrity sha512-7N1QH9buudSJ7sI8Pe4mBHJr5oZ48s0hcanI9w3wgijAlv1OZNUZve9JR4x42dn5lJ5Sm87V1JNfnoh10EnQlA==
   dependencies:
     "@types/filesystem" "*"
     "@types/har-format" "*"

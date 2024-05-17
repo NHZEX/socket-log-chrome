@@ -43,6 +43,7 @@ class Client {
         tls: false,
         host: 'localhost',
         port: 1229,
+        path: '/',
     };
 
     ws = null

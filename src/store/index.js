@@ -7,6 +7,7 @@ export default createStore({
       address: {
         host: 'localhost',
         port: 1229,
+        path: '/',
         tls: false,
       },
       enable: false,
@@ -55,6 +56,7 @@ export default createStore({
         conn.tls = get(data, 'tls', false);
         conn.host = get(data, 'host', '127.0.0.1');
         conn.port = get(data, 'port', 1229);
+        conn.path = get(data, 'path', '/');
       }
       commit('updateAddress', conn)
     }

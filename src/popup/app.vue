@@ -17,6 +17,7 @@
         </section>
         监听主机： <input v-model="data.address.host" title="监听主机"/> <br />
         监听端口： <input v-model.number="data.address.port" title="监听端口"/> <br />
+        监听路径： <input v-model.number="data.address.path" title="监听路径"/> <br />
         连接地址： <input :value="data.displayUrl" title="监听地址" readonly style="background-color: rgba(66,66,66,0.5)"/> <br/>
         ClientID： <input v-model="data.clientId" title="客户ID"/> <br/>
       </div>
@@ -62,7 +63,7 @@ export default {
         set: val => store.commit('setEnable', val),
       }),
       protocol: computed(() => store.state.address.tls ? 'wss' : 'ws'),
-      displayUrl: computed(() => `${data.protocol}://${data.address.host}:${data.address.port}`),
+      displayUrl: computed(() => `${data.protocol}://${data.address.host}:${data.address.port}${data.address.path}`),
     })
 
     const onMessage = (message) => {

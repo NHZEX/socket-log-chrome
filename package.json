@@ -47,5 +47,8 @@
     "not op_mob < 999",
     "not safari < 999",
     "not samsung < 999"
-  ]
+  ],
+  "volta": {
+    "node": "14.21.3"
+  }
 }

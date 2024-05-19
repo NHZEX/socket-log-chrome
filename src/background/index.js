@@ -7,21 +7,46 @@ import {
     badge_error_bright,
     badge_error_destroy
 } from 'src/helper'
+import { isObject } from "lodash";
+import {
+    getAddressData,
+    getClientId,
+    isEnableListen,
+    migrateSetting
+} from "../storage";
 
-const IMG_LOGO = require('src/assets/image/logo_320.png');
+const IMG_LOGO = chrome.runtime.getURL(require('src/assets/image/logo_320.png'));
 
-function set_running_state(message) {
-    localStorage.setItem('status_message', message);
-    try {
-        chrome.runtime.sendMessage({
-            event: 'update_status',
-            data: {
-                message: message,
-            }
-        });
-    } catch (e) {
-        console.info('sendMessage update_status fail')
+chrome.runtime.onInstalled.addListener(async ({ reason }) => {
+    console.log('onInstalled', reason)
+
+    if (reason !== 'install') {
+        return;
     }
+
+    // Create an alarm so we have something to look at in the demo
+    await chrome.alarms.create('listener-heartbeat', {
+        delayInMinutes: 0.5,
+        periodInMinutes: 0.5
+    });
+});
+
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+    console.log('onMessage sender', sender)
+    if (!isObject(message)) {
+        return false;
+    }
+    if ('restart_connection' === message.event) {
+        console.debug('restart_connection listen server')
+        await wsc.init()
+        sendResponse('restart_connection done')
+    }
+});
+
+async function set_running_state(message) {
+    await chrome.storage.session.set({
+        status_message: message
+    });
 }
 
 function notifications (title, message, timeout, id) {
@@ -51,20 +76,9 @@ class Client {
 
     constructor () {}
 
-    getAddress() {
-        try {
-            let tmp_value = localStorage.getItem('address');
-            if (tmp_value) {
-                return JSON.parse(tmp_value);
-            }
-        } catch (e) {
-            throw 'listen_address 无法反序列化';
-        }
-    }
-
-    init () {
-        let open = localStorage.getItem('enable');
-        if (open === 'false' || open == null) {
+    async init () {
+        if (await isEnableListen() === false) {
+            console.log('当前监听状态：禁用')
             if (this.ws && (WebSocket.CLOSED !== this.ws.readyState || WebSocket.CLOSING !== this.ws.readyState)) {
                 this.ws.close();
             }
@@ -74,8 +88,8 @@ class Client {
         }
 
         // 载入监听地址
-        this.address = this.getAddress();
-        let clientId = localStorage.getItem('client_id');
+        this.address = await getAddressData();
+        const clientId = await getClientId();
 
         let path = this.address.path.trim()
         if (!path.startsWith('/')) {
@@ -108,99 +122,70 @@ class Client {
             this.#onClone('服务已经关闭')
         };
 
-        this.ws.onopen = () => {
-            set_running_state('服务链接成功');
+        this.ws.onopen = async () => {
+            await set_running_state('服务链接成功');
             enable_icon();
         };
 
-        this.ws.onmessage = e => {
-            this.#onMessage(e)
+        this.ws.onmessage = async e => {
+            await this.#onMessage(e)
         };
     }
 
-    #onMessage (event) {
-        let client_id = localStorage.getItem('client_id');
+    async #onMessage (event) {
+        let client_id = await getClientId();
 
         let result = {
             client_id: null,
             force_client_id: null,
             logs: null,
-            tabid: null,
+            // tabid: null,
         };
         try {
             let data = JSON.parse(event.data);
             result.client_id = data['client_id'];
             result.force_client_id = data['force_client_id'];
             result.logs = data['logs'];
-            result.tabid = data['tabid'];
+            // result.tabid = data['tabid'];
         } catch (e) {
             badge_error_bright();
-            if (0 === event.data.indexOf('close:')) {
-                // onclose 函数置空，防止重复链接
-                this.ws.onclose = () => {};
-
-                let opt = {
-                    type: "basic",
-                    title: "警告",
-                    message: `当前client_id：${client_id} 不允许连接服务`,
-                    iconUrl: IMG_LOGO
-                };
-                chrome.notifications.create('', opt, function (id) {
-                    setTimeout(function () {
-                        chrome.notifications.clear(id, function () {
-                        });
-                    }, 5000);
-                });
-            } else {
-                let opt = {
-                    type: "basic",
-                    title: "日志格式无法解析(no json)",
-                    message: event.data,
-                    iconUrl: IMG_LOGO
-                };
-                chrome.notifications.create('', opt, function (id) {
-                    setTimeout(function () {
-                        chrome.notifications.clear(id, function () {
-                        });
-                    }, 5000);
-                });
-            }
+            let opt = {
+                type: "basic",
+                title: "日志格式无法解析(no json)",
+                message: event.data,
+                iconUrl: IMG_LOGO
+            };
+            chrome.notifications.create(null, opt, function (id) {
+                setTimeout(function () {
+                    chrome.notifications.clear(id, function () {
+                    });
+                }, 5000);
+            });
             badge_error_destroy();
             return;
         }
 
-        // 判断是否有强制日志
-        if (client_id && result.force_client_id === client_id) {
+        // 分发用户一致则继续分发日志
+        if (!(result.client_id === client_id || result.force_client_id === client_id)) {
+            return
+        }
+
+        try {
             badge_normal_bright();
-            //将强制日志输出到当前的tab页
-            chrome.tabs.query({
-                    active: true,   // 标签页在窗口中为活动标签页
-                    currentWindow: true,    // 标签页在当前窗口中
-                },
-                (tabArray) => {
-                    if (tabArray.length > 0) {
-                        let tab = tabArray.shift();
-                        Client.#checkMessage(event);
-                        chrome.tabs.sendMessage(tab.id, result.logs, (results) => {
-                            badge_normal_destroy();
-                        });
-                    }
-                }
-            );
-            return;
-        }
-
-        if ((client_id && result.client_id !== client_id) || !result.tabid) {
-            //不是当前用户的日志不显示。
-            return;
-        }
-
-        // 延迟保证日志每次都能记录
-        if (result.tabid) {
-            Client.#checkMessage(event);
-            chrome.tabs.sendMessage(parseInt(result.tabid), result.logs, (results) => {
-                badge_normal_destroy();
-            });
+            // 获取最后活动的标签页
+            const tabs = await chrome.tabs.query({
+                active: true,
+                lastFocusedWindow: true,
+                currentWindow: true,
+            })
+            console.log(tabs)
+            if (tabs.length > 0) {
+                console.log('准备推送到 tabs: ', tabs)
+                let tab = tabs[0];
+                await chrome.tabs.sendMessage(tab.id, result.logs);
+            }
+        } finally {
+            badge_normal_destroy();
         }
     }
 
@@ -212,31 +197,15 @@ class Client {
         set_running_state(stateMessage);
         disable_icon();
     }
-
-    static #checkMessage (event) {
-        if (event.data.indexOf('SocketLog error handler') !== -1) {
-            notifications('注意', '有异常报错，请注意查看console 控制台中的日志', 3000, 'notify-socketLog-error-handler')
-        }
-
-        if (event.data.indexOf('[NO WHERE]') !== -1) {
-            notifications('注意', '存在没有WHERE语句的操作sql语句', 3000, '')
-        }
-
-    };
 }
 
-function url_exp(url) {
-    let splatParam = /\*/g;
-    let escapeRegExp = /[-[\]{}()+?.,\\^$#\s]/g;
-    url = url.replace(escapeRegExp, '\\$&')
-        .replace(splatParam, '(.*?)');
-    return new RegExp(url, 'i');
-}
-
-initRequestListener()
+await migrateSetting()
+await initRequestListener()
 const wsc = new Client()
-wsc.init()
+await wsc.init()
 
-window.restart = () => {
-    wsc.init()
-}
+chrome.alarms.onAlarm.addListener((alarm) => {
+    chrome.action.setIcon({
+        path: getIconPath(alarm.name),
+    });
+});

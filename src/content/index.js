@@ -28,4 +28,5 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse('done');
 });
 
-
+console.log('已经注入日志接收器')
+chrome.runtime.onStartup

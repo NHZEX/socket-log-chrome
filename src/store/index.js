@@ -1,5 +1,6 @@
 import { createStore } from 'vuex'
 import { get } from 'lodash'
+import { getAddressData, getClientId, getRunningState, isEnableListen } from "../storage";
 
 export default createStore({
   state () {
@@ -10,7 +11,7 @@ export default createStore({
         path: '/',
         tls: false,
       },
-      enable: false,
+      enableListen: false,
       clientId: '',
       stateMsg: '正在连接...',
     }
@@ -26,38 +27,35 @@ export default createStore({
       state.clientId = clientId
     },
     setEnable (state, enable) {
-      state.enable = enable
+      state.enableListen = enable
     }
   },
   actions: {
-    async loadStorageData ({ commit, dispatch }) {
-      commit('updateClient', localStorage.getItem('client_id'))
-      commit('setEnable', localStorage.getItem('enable') === 'true')
+    async loadStorageData ({ commit, dispatch, state }) {
+      commit('updateClient', await getClientId())
+      commit('setEnable', await isEnableListen())
       await dispatch('syncStatusMessage')
       await dispatch('readStorageAddress')
+
+      console.log('加载存储数据完成', state)
     },
-    saveStorageData ({ state }) {
-      localStorage.setItem('address', JSON.stringify(state.address));
-      localStorage.setItem('client_id', state.clientId);
-      localStorage.setItem('enable', state.enable);
+    async saveStorageData ({ state }) {
+      await chrome.storage.local.set({
+        address: state.address,
+        clientId: state.clientId,
+        enableListen: state.enableListen,
+      })
     },
-    syncStatusMessage ({ commit }) {
-      commit('updateState', localStorage.getItem('status_message') || '无状态')
+    async syncStatusMessage ({ commit }) {
+      commit('updateState', await getRunningState() || '无状态')
     },
-    readStorageAddress ({ commit }) {
+    async readStorageAddress ({ commit }) {
       const conn = {}
-      const tmpValue = localStorage.getItem('address')
-      let data = {}
-      try {
-        if (tmpValue) {
-          data = JSON.parse(tmpValue);
-        }
-      } finally {
-        conn.tls = get(data, 'tls', false);
-        conn.host = get(data, 'host', '127.0.0.1');
-        conn.port = get(data, 'port', 1229);
-        conn.path = get(data, 'path', '/');
-      }
+      const data = await getAddressData()
+      conn.tls = get(data, 'tls', false);
+      conn.host = get(data, 'host', '127.0.0.1');
+      conn.port = get(data, 'port', 1229);
+      conn.path = get(data, 'path', '/');
       commit('updateAddress', conn)
     }
   },

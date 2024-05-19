@@ -37,6 +37,8 @@
   },
   "browserslist": [
     "defaults",
+    "> 5%",
+    "not dead",
     "not IE 11",
     "not op_mini all",
     "not kaios < 999",

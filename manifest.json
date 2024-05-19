@@ -1,8 +1,9 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "SocketLog++",
   "version": "0.0.1",
   "description": "SocketLog++",
+  "minimum_chrome_version": "116",
   "icons": {
     "16": "static/images/logo_16.png",
     "32": "static/images/logo_32.png",
@@ -10,15 +11,13 @@
     "128": "static/images/logo_128.png",
     "320": "static/images/logo_320.png"
   },
-  "browser_action": {
+  "action": {
     "default_icon": "static/images/logo_64.png",
     "default_popup": "popup.html",
     "default_title": "SocketLog++"
   },
   "background": {
-    "scripts": [
-      "background/index.js"
-    ]
+    "service_worker": "background/index.js"
   },
   "content_scripts": [
     {
@@ -36,11 +35,21 @@
     "open_in_tab": true
   },
   "permissions": [
+    "alarms",
+    "declarativeNetRequest",
     "webRequest",
-    "webRequestBlocking",
-    "tabs",
+    "storage",
     "notifications",
-    "http://*/*",
-    "https://*/*"
+    "offscreen"
+  ],
+  "optional_host_permissions":[
+    "https://*/*",
+    "http://*/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["_auto_fill_"],
+      "matches": ["<all_urls>"]
+    }
   ]
 }

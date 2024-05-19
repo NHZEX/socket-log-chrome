@@ -33,7 +33,7 @@
 
 <script>
 
-import { reactive, computed, onMounted } from 'vue'
+import { reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useStore, mapState } from 'vuex'
 import { isObject } from 'lodash'
 import { restartConnection } from 'src/helper'
@@ -59,31 +59,30 @@ export default {
         set: val => store.commit('updateClient', val),
       }),
       enable: computed({
-        get: () => store.state.enable,
+        get: () => store.state.enableListen,
         set: val => store.commit('setEnable', val),
       }),
       protocol: computed(() => store.state.address.tls ? 'wss' : 'ws'),
       displayUrl: computed(() => `${data.protocol}://${data.address.host}:${data.address.port}${data.address.path}`),
     })
 
-    const onMessage = (message) => {
-      if (!isObject(message)) {
-        return false;
-      }
-      if ('update_status' === message.event) {
-        store.commit('updateState', message.data.message)
-      }
-    }
-
     const onSave = () => {
       store.dispatch('saveStorageData')
       restartConnection();
     }
 
-    onMounted(() => {
-      if (isChrome) {
-        chrome.runtime.onMessage.addListener(onMessage);
+    const onMessage = ({ status_message: { newValue, oldValue } }) => {
+      console.log('session.onChanged', newValue, oldValue)
+      if (newValue !== oldValue) {
+        store.commit('updateState', newValue)
       }
+    }
+
+    onMounted(() => {
+      chrome.storage.session.onChanged.addListener(onMessage)
+    })
+    onUnmounted(() => {
+      chrome.storage.session.onChanged.removeListener(onMessage)
     })
 
     return {

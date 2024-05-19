@@ -1,35 +1,29 @@
-export function initRequestListener () {
-    chrome.webRequest.onBeforeSendHeaders.addListener(
-        (details) => {
-            let open = localStorage.getItem('enable')
+export async function initRequestListener () {
+    const oldRules = await chrome.declarativeNetRequest.getDynamicRules();
+    const oldRuleIds = oldRules.map(rule => rule.id);
 
-            if (open === 'false' || open === null) {
-                return {
-                    requestHeaders: details.requestHeaders
-                };
+    const userAgent = navigator.userAgent + ` SocketLog(tabid=0&client_id=debug1)`
+    /**
+     * @type Rule[]
+     */
+    const newRules = [
+        {
+            "id": 1,
+            "priority": 1,
+            "action": {
+                "type": "modifyHeaders",
+                "requestHeaders": [
+                    { "header": "User-Agent", "operation": "set" , 'value': userAgent }
+                ]
+            },
+            "condition": {
+                "urlFilter": "*://*/*"
             }
+        }
+    ];
 
-            let client_id = localStorage.getItem('client_id');
-            if (!client_id) {
-                client_id = '';
-            }
-
-            let header = `tabid=${details.tabId}&client_id=${client_id}`;
-
-            //将Header隐藏在User-Agent中， 不能使用自定义Header了， 不让HTTPS情况下会报不安全
-            for (let i = 0; i < details.requestHeaders.length; ++i) {
-                if (details.requestHeaders[i].name === 'User-Agent') {
-                    details.requestHeaders[i].value += " SocketLog(" + header + ")";
-                    break;
-                }
-            }
-
-            return {
-                requestHeaders: details.requestHeaders
-            };
-        }, {
-            urls: ["<all_urls>"]
-        },
-        ["blocking", "requestHeaders"]
-    );
+    await chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: oldRuleIds,
+        addRules: newRules
+    })
 }

@@ -14,6 +14,35 @@ const dist_dir = path.resolve(__dirname, 'dist')
 
 // const pages = {}
 
+function enumerateFiles(directory) {
+    const files = [];
+
+    // 同步地读取目录中的内容
+    const contents = fs.readdirSync(directory);
+
+    contents.forEach((item) => {
+        const fullPath = path.join(directory, item);
+
+        // 检查当前项是否为目录
+        if (fs.statSync(fullPath).isDirectory()) {
+            // 如果是目录，则递归调用函数以获取子目录中的文件
+            files.push(...enumerateFiles(fullPath));
+        } else {
+            // 如果是文件，则将文件路径添加到文件数组中
+            files.push(fullPath);
+        }
+    });
+
+    return files;
+}
+
+function getResourcesList()
+{
+    return enumerateFiles(path.resolve(src_dir, 'assets', 'image')).map(file => {
+        return 'static/images/' + path.parse(file).base
+    })
+}
+
 const plugins = [
     new webpack.DefinePlugin({
         __VUE_PROD_DEVTOOLS__: true,
@@ -34,12 +63,18 @@ const plugins = [
                         let manifest = JSON.parse(content.toString());
                         manifest.version = packageJson.version
                         if (process.env.NODE_ENV === 'development') {
-                            manifest.content_security_policy = "script-src 'self' 'unsafe-eval'; object-src 'self';"
+                            // manifest.content_security_policy = "script-src 'self' 'unsafe-eval'; object-src 'self';"
                         }
+
+                        manifest.web_accessible_resources[0].resources = getResourcesList()
                         return Buffer.from(JSON.stringify(manifest, null, 2));
                     },
                 },
             },
+            // {
+            //     from: "src/off_screen_read_local_storage.html",
+            //     to: dist_dir + "/off_screen_read_local_storage.html",
+            // }
         ]
     }),
     new HtmlPlugin({
@@ -51,6 +86,11 @@ const plugins = [
         filename: 'options.html',
         template: './src/options/index.ejs',
         chunks: ['options'],
+    }),
+    new HtmlPlugin({
+        filename: 'off_screen_read_local_storage.html',
+        template: './src/off_screen/off_screen_read_local_storage.html',
+        chunks: ['off_screen_read_local_storage'],
     }),
 ]
 
@@ -67,6 +107,7 @@ module.exports = {
         content: './src/content/index.js',
         popup: './src/popup/index.js',
         options: './src/options/index.js',
+        off_screen_read_local_storage: './src/off_screen/off_screen_read_local_storage.js',
     },
     output: {
         filename: '[name]/index.js',
@@ -112,4 +153,7 @@ module.exports = {
         ],
     },
     plugins: plugins,
+    experiments: {
+        topLevelAwait: true,
+    },
 };

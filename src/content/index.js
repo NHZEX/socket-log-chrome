@@ -3,7 +3,7 @@
  * @author luofei614<weibo.com/luofei614>
  * console print log
  */
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+const onMessage = (message, sender, sendResponse) => {
     if ('object' !== typeof (message)) {
         console.warn('socketlog', 'invalid content', message);
         sendResponse('not object');
@@ -26,7 +26,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
     });
     sendResponse('done');
-});
+}
+chrome.runtime.onMessage.addListener(onMessage);
+// 开启接收器守护
+setInterval(() => {
+    if (!chrome.runtime.onMessage.hasListeners()) {
+        // 重新激活监听
+        chrome.runtime.onMessage.addListener(onMessage);
+    }
+}, 1000)
 
 console.log('已经注入日志接收器')
-chrome.runtime.onStartup

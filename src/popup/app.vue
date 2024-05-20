@@ -23,7 +23,7 @@
       </div>
       <div>
         开启：<input type="checkbox" v-model="data.enable" title="服务开关"><br />
-        <button type="button" @click="onSave">保 存</button>
+        <button type="button" @click="onSave">保 存 / 重 连</button>
       </div>
     </form>
     <div>

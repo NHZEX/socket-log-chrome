@@ -12,7 +12,7 @@ import {
     getAddressData,
     getClientId,
     isEnableListen,
-    migrateSetting
+    migrateSetting, listenerAllowHostRulesChanged
 } from "../storage";
 import { Client } from "./ListenerClient";
 
@@ -71,6 +71,10 @@ chrome.storage.local.onChanged.addListener(async ({ clientId }) => {
     if (newValue !== oldValue) {
         await installRequestHandleRules()
     }
+})
+
+listenerAllowHostRulesChanged(async () => {
+    await installRequestHandleRules()
 })
 
 const wsc = new Client()

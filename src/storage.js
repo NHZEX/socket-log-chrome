@@ -1,4 +1,5 @@
 import { get, has } from "lodash";
+import { installRequestHandleRules } from "./background/RequestHandle";
 
 export async function getAddressData() {
     const data = await chrome.storage.local.get(['address'])
@@ -16,6 +17,43 @@ export async function isEnableListen() {
     const data = await chrome.storage.local.get(['enableListen'])
 
     return data?.enableListen ?? false
+}
+
+export async function getAllowHostRules() {
+    const data = await chrome.storage.sync.get(['allowHosts'])
+
+    return data?.allowHosts ?? []
+}
+
+export async function setAllowHosts(allowHosts) {
+
+    const hosts = [];
+    for (const host of allowHosts) {
+        if (!/^[\x21-\x7E]+$/.test(host)) {
+            throw new Error(`主机匹配规则不合法: ${host}`)
+        }
+        hosts.push(host);
+    }
+
+    await chrome.storage.sync.set({
+        allowHosts: hosts,
+        currentRuleFlag: (new Date()).getTime(),
+    })
+
+    return hosts
+}
+
+export function listenerAllowHostRulesChanged(cb) {
+    chrome.storage.sync.onChanged.addListener(async ({ currentRuleFlag }) => {
+        if (currentRuleFlag === undefined) {
+            return
+        }
+        const { newValue, oldValue } = currentRuleFlag
+        console.log('allowHostRules.onChanged', newValue, oldValue)
+        if (newValue !== oldValue) {
+            cb()
+        }
+    })
 }
 
 export async function getRunningState() {

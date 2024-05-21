@@ -45,7 +45,7 @@ function getResourcesList()
 
 const plugins = [
     new webpack.DefinePlugin({
-        __VUE_PROD_DEVTOOLS__: true,
+        __VUE_PROD_DEVTOOLS__: process.env.NODE_ENV === 'development',
     }),
     new VueLoaderPlugin(),
     new CleanPlugin(),

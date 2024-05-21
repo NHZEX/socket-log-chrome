@@ -1,15 +1,13 @@
-const {isObject} = require("lodash");
-const {isEnableListen, getAddressData, getClientId} = require("../storage");
-const {
+import { isEnableListen, getAddressData, getClientId } from "../storage";
+import {
+    IMG_LOGO,
     disable_icon,
     enable_icon,
     badge_error_bright,
     badge_error_destroy,
     badge_normal_bright,
     badge_normal_destroy
-} = require("../helper");
-
-const IMG_LOGO = chrome.runtime.getURL(require('src/assets/image/logo_320.png'));
+} from "../helper";
 
 async function set_running_state(message) {
     await chrome.storage.session.set({

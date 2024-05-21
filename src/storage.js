@@ -1,5 +1,6 @@
 import { get, has } from "lodash";
 import { installRequestHandleRules } from "./background/RequestHandle";
+import { IMG_LOGO } from "./helper";
 
 export async function getAddressData() {
     const data = await chrome.storage.local.get(['address'])
@@ -140,6 +141,13 @@ export async function migrateSetting()
                     chrome.runtime.onMessage.removeListener(readCallback)
                     await chrome.offscreen.closeDocument()
                 }
+                const manifest = chrome.runtime.getManifest();
+                chrome.notifications.create(null, {
+                    type: "basic",
+                    title: `重大版本更新通知 (${manifest.version})`,
+                    message: '老版本配置已经成功迁移，请检查插件是否工作正常！',
+                    iconUrl: IMG_LOGO
+                });
             }
         }
         chrome.runtime.onMessage.addListener(readCallback)

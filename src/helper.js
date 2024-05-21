@@ -1,5 +1,6 @@
 const IMG_LOGO_X16 = chrome.runtime.getURL(require('src/assets/image/logo_16.png'));
 const IMG_LOGO_DISABLED_X16 = chrome.runtime.getURL(require('src/assets/image/logo_disabled_16.png'));
+export const IMG_LOGO = chrome.runtime.getURL(require('src/assets/image/logo_320.png'));
 
 // 下标两/灭
 const BADGE_BRIGHT = ' ';

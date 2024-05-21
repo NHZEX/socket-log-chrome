@@ -1,6 +1,5 @@
 import { getAllowHostRules, getClientId } from "../storage";
-
-const IMG_LOGO = chrome.runtime.getURL(require('src/assets/image/logo_320.png'));
+import { IMG_LOGO } from "../helper";
 
 export async function installRequestHandleRules () {
     const clientId = await getClientId()

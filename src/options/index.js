@@ -3,22 +3,11 @@ import 'src/assets/style/options.css'
 document.addEventListener('DOMContentLoaded', init, false);
 
 function init() {
-
-    if (localStorage.getItem('online_domain')) {
-        document.getElementById('online_domain').value = localStorage.getItem('online_domain');
-    }
-
-
-    if (localStorage.getItem('special_domain')) {
-        document.getElementById('special_domain').value = localStorage.getItem('special_domain');
-    }
-
-    document.getElementById('save').addEventListener('click', save, false);
+    // todo 待实现
 }
 
 
 function save() {
-    localStorage.setItem('online_domain', document.getElementById('online_domain').value);
-    localStorage.setItem('special_domain', document.getElementById('special_domain').value);
+    // todo 待实现
     alert('保存成功');
 }

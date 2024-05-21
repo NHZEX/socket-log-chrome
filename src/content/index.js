@@ -29,11 +29,15 @@ const onMessage = (message, sender, sendResponse) => {
 }
 chrome.runtime.onMessage.addListener(onMessage);
 // 开启接收器守护
-setInterval(() => {
+let maxNotify = 3
+const _t = setInterval(() => {
     if (!chrome.runtime.onMessage.hasListeners()) {
-        // 重新激活监听
-        chrome.runtime.onMessage.addListener(onMessage);
+        console.warn('[socket-log] 当前页面监听已经失效，请刷新页面重新激活插件')
+        maxNotify--
+        if (0 > maxNotify) {
+            clearInterval(_t)
+        }
     }
-}, 1000)
+}, 2000)
 
 console.log('已经注入日志接收器')

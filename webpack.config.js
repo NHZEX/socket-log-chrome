@@ -92,6 +92,11 @@ const plugins = [
         template: './src/off_screen/off_screen_read_local_storage.html',
         chunks: ['off_screen_read_local_storage'],
     }),
+    new HtmlPlugin({
+        filename: 'rule_help.html',
+        template: './src/off_screen/rule_help.ejs',
+        chunks: [],
+    }),
 ]
 
 if (process.env.npm_config_report) {

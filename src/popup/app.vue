@@ -39,8 +39,19 @@
             rows="10"
             cols="30"
             wrap="soft"
-            placeholder="输入激活调试的域名，一行一个，可以用通配符"
+            placeholder="输入激活调试的域名，一行一个，可以用通配符
+'*'：匹配任意数量的字符。
+'|'：锚点，用于匹配字符串的开头或结尾。
+'||'：域名锚点，用于匹配网址（子）域名的开头。
+'^'：分隔符，匹配除字母、数字、下划线 _、连字符 -、点 . 或百分号 % 之外的任何内容。
+示例
+"
         ></textarea>
+        <div class="help">
+          <a href="/rule_help.html" title="帮助" target="_blank">
+            <img src="@/assets/image/help_16.png" alt="help"/>
+          </a>
+        </div>
         <div style="max-width: 100px">
           <span style="display: block; padding-bottom: 4px">已激活规则：{{ enabledRuleCount }}</span>
           <button type="button" @click="onSaveAllowHosts">保 存</button>

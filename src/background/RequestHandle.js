@@ -1,5 +1,7 @@
 import { getAllowHostRules, getClientId } from "../storage";
 
+const IMG_LOGO = chrome.runtime.getURL(require('src/assets/image/logo_320.png'));
+
 export async function installRequestHandleRules () {
     const clientId = await getClientId()
 
@@ -59,10 +61,24 @@ export async function installRequestHandleRules () {
     const oldRules = await chrome.declarativeNetRequest.getDynamicRules();
     const oldRuleIds = oldRules.map(rule => rule.id);
 
-    await chrome.declarativeNetRequest.updateDynamicRules({
-        removeRuleIds: oldRuleIds,
-        addRules: newRules
-    })
+    try {
+        await chrome.declarativeNetRequest.updateDynamicRules({
+            removeRuleIds: oldRuleIds,
+            addRules: newRules
+        })
+    } catch (e) {
+        console.error(e)
+        chrome.notifications.create(null, {
+            type: "basic",
+            title: "更新域名监听名单失败",
+            message: `请检查输入是否有效：\n${e.message}`,
+            iconUrl: IMG_LOGO
+        }, function (id) {
+            setTimeout(function () {
+                chrome.notifications.clear(id);
+            }, 10000);
+        });
+    }
 }
 
 export async function removeRequestHandleRules ()

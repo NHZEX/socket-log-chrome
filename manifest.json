@@ -35,9 +35,7 @@
     "open_in_tab": true
   },
   "permissions": [
-    "alarms",
     "declarativeNetRequest",
-    "webRequest",
     "storage",
     "notifications",
     "offscreen"

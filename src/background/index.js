@@ -27,10 +27,10 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
     console.log('onInstalled', reason)
 
     if (reason === 'install') {
-        await chrome.alarms.create('listener-heartbeat', {
-            delayInMinutes: 0.5,
-            periodInMinutes: 0.5
-        });
+        // await chrome.alarms.create('listener-heartbeat', {
+        //     delayInMinutes: 0.5,
+        //     periodInMinutes: 0.5
+        // });
     } else if (reason === 'update') {
         // 执行配置迁移
         setTimeout(async () => {
@@ -42,9 +42,9 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
     }
 });
 
-chrome.alarms.onAlarm.addListener((alarm) => {
-    console.log('alarm trigger', alarm.name)
-});
+// chrome.alarms.onAlarm.addListener((alarm) => {
+//     console.log('alarm trigger', alarm.name)
+// });
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     console.log('onMessage sender', sender)
@@ -58,9 +58,9 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     }
 });
 
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-    // console.log('tabsOnUpdated', tabId, changeInfo, tab)
-});
+// chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+//     console.log('tabsOnUpdated', tabId, changeInfo, tab)
+// });
 
 chrome.storage.local.onChanged.addListener(async ({ clientId }) => {
     if (clientId === undefined) {

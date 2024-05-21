@@ -138,8 +138,10 @@ export async function migrateSetting()
                     console.log('迁移的新设置', newSetting)
                     await chrome.storage.local.set(newSetting)
                 } finally {
-                    chrome.runtime.onMessage.removeListener(readCallback)
-                    await chrome.offscreen.closeDocument()
+                    setTimeout(async () => {
+                        chrome.runtime.onMessage.removeListener(readCallback)
+                        await chrome.offscreen.closeDocument()
+                    }, 3000)
                 }
                 const manifest = chrome.runtime.getManifest();
                 chrome.notifications.create(null, {

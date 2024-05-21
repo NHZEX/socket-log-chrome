@@ -42,6 +42,7 @@
             placeholder="输入激活调试的域名，一行一个，可以用通配符"
         ></textarea>
         <div style="max-width: 100px">
+          <span style="display: block; padding-bottom: 4px">已激活规则：{{ enabledRuleCount }}</span>
           <button type="button" @click="onSaveAllowHosts">保 存</button>
         </div>
       </div>
@@ -62,12 +63,11 @@ export default {
   components: {
   },
   setup() {
-    const isChrome = chrome.runtime && chrome.extension;
-
     const store = useStore()
     store.dispatch('loadStorageData')
 
     const allowHosts = ref([])
+    const enabledRuleCount = ref(0)
 
     const data = reactive({
       stateMsg: computed(() => store.state.stateMsg),
@@ -127,8 +127,9 @@ export default {
     }
 
     onMounted(async () => {
-      chrome.storage.session.onChanged.addListener(onMessage)
-      allowHosts.value = await getAllowHostRules()
+      chrome.storage.session.onChanged.addListener(onMessage);
+      allowHosts.value = await getAllowHostRules();
+      enabledRuleCount.value = (await chrome.declarativeNetRequest.getDynamicRules()).length;
     })
     onUnmounted(() => {
       chrome.storage.session.onChanged.removeListener(onMessage)
@@ -136,6 +137,7 @@ export default {
 
     return {
       data,
+      enabledRuleCount,
       onSave,
       onSaveAllowHosts,
     }

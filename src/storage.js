@@ -20,9 +20,9 @@ export async function isEnableListen() {
 }
 
 export async function getAllowHostRules() {
-    const data = await chrome.storage.sync.get(['allowHosts'])
+    const data = await chrome.storage.sync.get(['allowRules'])
 
-    return data?.allowHosts ?? []
+    return data?.allowRules ?? []
 }
 
 export async function setAllowHosts(allowHosts) {
@@ -36,7 +36,7 @@ export async function setAllowHosts(allowHosts) {
     }
 
     await chrome.storage.sync.set({
-        allowHosts: hosts,
+        allowRules: hosts,
         currentRuleFlag: (new Date()).getTime(),
     })
 

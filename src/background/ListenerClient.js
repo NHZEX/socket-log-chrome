@@ -148,7 +148,7 @@ export class Client {
             })
             console.log(tabs)
             if (tabs.length > 0) {
-                console.log('准备推送到 tabs: ', tabs)
+                console.log('即将推送 tabs: ', tabs)
                 let tab = tabs[0];
                 await chrome.tabs.sendMessage(tab.id, result.logs);
             }

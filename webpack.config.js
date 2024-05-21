@@ -10,7 +10,9 @@ const VueLoaderPlugin = require('vue-loader').VueLoaderPlugin;
 const packageJson = JSON.parse(fs.readFileSync(path.resolve('./package.json')).toString())
 
 const src_dir = path.resolve(__dirname, 'src')
-const dist_dir = path.resolve(__dirname, 'dist')
+const dist_dir = process.env.NODE_ENV === 'production'
+    ? path.resolve(__dirname, 'release')
+    : path.resolve(__dirname, 'dist');
 
 // const pages = {}
 

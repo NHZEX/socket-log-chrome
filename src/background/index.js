@@ -1,4 +1,4 @@
-import { initRequestListener } from './RequestHandle'
+import { installRequestHandleRules } from './RequestHandle'
 import {
     enable_icon,
     disable_icon,
@@ -16,18 +16,30 @@ import {
 } from "../storage";
 import { Client } from "./ListenerClient";
 
+self.addEventListener('install', event => {
+    console.log('[ServiceWorker] 工作进程被安装', event)
+});
+self.addEventListener('activate', event => {
+    console.log('[ServiceWorker] 工作进程被激活', event)
+});
+
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
     console.log('onInstalled', reason)
 
-    if (reason !== 'install') {
-        return;
+    if (reason === 'install') {
+        await chrome.alarms.create('listener-heartbeat', {
+            delayInMinutes: 0.5,
+            periodInMinutes: 0.5
+        });
+    } else if (reason === 'update') {
+        // 执行配置迁移
+        setTimeout(async () => {
+            await migrateSetting()
+        }, 0)
     }
-
-    // Create an alarm so we have something to look at in the demo
-    await chrome.alarms.create('listener-heartbeat', {
-        delayInMinutes: 0.5,
-        periodInMinutes: 0.5
-    });
+    if (reason === 'install' || reason === 'chrome_update') {
+        await installRequestHandleRules()
+    }
 });
 
 chrome.alarms.onAlarm.addListener((alarm) => {
@@ -47,10 +59,22 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 });
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-    console.log('tabsOnUpdated', tabId, changeInfo, tab)
+    // console.log('tabsOnUpdated', tabId, changeInfo, tab)
+});
+
+chrome.storage.local.onChanged.addListener(async ({ clientId }) => {
+    if (clientId === undefined) {
+        return
+    }
+    const { newValue, oldValue } = clientId
+    console.log('clientId.onChanged', newValue, oldValue)
+    if (newValue !== oldValue) {
+        await installRequestHandleRules()
+    }
 })
 
-await migrateSetting()
-await initRequestListener()
 const wsc = new Client()
-await wsc.init()
+
+;(async () => {
+    await wsc.init()
+})();

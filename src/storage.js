@@ -53,6 +53,8 @@ async function setupOffscreenDocument(path, reasons, justification) {
 
 export async function migrateSetting()
 {
+    console.log('执行配置迁移')
+
     const address = await getAddressData()
     console.log(address, address === null)
     if (address === null) {

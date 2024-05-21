@@ -42,9 +42,11 @@
     "notifications",
     "offscreen"
   ],
-  "optional_host_permissions":[
+  "host_permissions": [
     "https://*/*",
     "http://*/*"
+  ],
+  "optional_host_permissions":[
   ],
   "web_accessible_resources": [
     {

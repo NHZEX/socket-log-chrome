@@ -71,7 +71,11 @@ export default {
       restartConnection();
     }
 
-    const onMessage = ({ status_message: { newValue, oldValue } }) => {
+    const onMessage = ({ status_message: statusMessage }) => {
+      if (statusMessage === undefined) {
+        return
+      }
+      const { newValue, oldValue } = statusMessage
       console.log('session.onChanged', newValue, oldValue)
       if (newValue !== oldValue) {
         store.commit('updateState', newValue)

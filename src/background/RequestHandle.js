@@ -1,8 +1,19 @@
-export async function initRequestListener () {
+import { getClientId } from "../storage";
+
+export async function installRequestHandleRules () {
+    const clientId = await getClientId()
+
+    if (!clientId) {
+        console.log('InstallRequestHandleRules: client is empty, stop handle')
+        await removeRequestHandleRules()
+        return
+    }
+    console.log(`InstallRequestHandleRules: client = ${clientId}`)
+
     const oldRules = await chrome.declarativeNetRequest.getDynamicRules();
     const oldRuleIds = oldRules.map(rule => rule.id);
 
-    const userAgent = navigator.userAgent + ` SocketLog(tabid=0&client_id=debug1)`
+    const userAgent = `${navigator.userAgent} SocketLog(tabid=0&client_id=${clientId})`
     /**
      * @type Rule[]
      */
@@ -25,5 +36,16 @@ export async function initRequestListener () {
     await chrome.declarativeNetRequest.updateDynamicRules({
         removeRuleIds: oldRuleIds,
         addRules: newRules
+    })
+}
+
+export async function removeRequestHandleRules ()
+{
+    const oldRules = await chrome.declarativeNetRequest.getDynamicRules();
+    const oldRuleIds = oldRules.map(rule => rule.id);
+
+    await chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: oldRuleIds,
+        addRules: []
     })
 }

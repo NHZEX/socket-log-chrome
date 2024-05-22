@@ -39,6 +39,7 @@ export class Client {
 
     ws = null
     #reconnectionTimer = 0
+    #heartbeatTimer = 0
 
     constructor () {}
 
@@ -86,10 +87,12 @@ export class Client {
         };
 
         this.ws.onclose = () => {
+            this.#heartbeatStop()
             this.#onClone('服务已经关闭')
         };
 
         this.ws.onopen = async () => {
+            this.#heartbeatBoot();
             await set_running_state('服务连接成功');
             enable_icon();
         };
@@ -99,7 +102,30 @@ export class Client {
         };
     }
 
+    #heartbeatBoot () {
+        this.#heartbeatStop()
+        this.#heartbeatTimer = setInterval(() => {
+            this.#sendPing()
+        }, 1000_0)
+    }
+
+    #heartbeatStop () {
+        if (this.#heartbeatTimer) {
+            clearInterval(this.#heartbeatTimer);
+        }
+    }
+
+    #sendPing () {
+        const binaryData = new Uint8Array([0x05, 0x22, 0x09]);
+        this.ws.send(binaryData.buffer);
+    }
+
     async #onMessage (event) {
+        if (event.data instanceof ArrayBuffer || event.data instanceof Blob) {
+            // 暂未使用的二进制数据
+            return
+        }
+
         let client_id = await getClientId();
 
         let result = {

@@ -3,7 +3,7 @@
   "version": "3.0.2",
   "private": true,
   "engines": {
-    "node": ">= 14.21"
+    "node": ">= 18.20"
   },
   "dependencies": {
     "lodash-es": "^4.17.21",
@@ -48,6 +48,6 @@
     "not samsung < 999"
   ],
   "volta": {
-    "node": "16.20.2"
+    "node": "18.20.3"
   }
 }

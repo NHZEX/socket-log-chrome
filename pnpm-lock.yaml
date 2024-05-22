@@ -9,7 +9,7 @@ dependencies:
     specifier: ^4.17.21
     version: 4.17.21
   vue:
-    specifier: ^3.0
+    specifier: ^3.4
     version: 3.4.27
   vuex:
     specifier: ^4.0.0
@@ -25,9 +25,6 @@ devDependencies:
   '@types/chrome':
     specifier: ^0.0.268
     version: 0.0.268
-  '@vue/compiler-sfc':
-    specifier: ^3.0.11
-    version: 3.4.27
   babel-loader:
     specifier: ^8.2.2
     version: 8.3.0(@babel/core@7.24.5)(webpack@5.91.0)
@@ -53,8 +50,8 @@ devDependencies:
     specifier: ^2.0.0
     version: 2.0.0(webpack@5.91.0)
   vue-loader:
-    specifier: ^16.2
-    version: 16.8.3(@vue/compiler-sfc@3.4.27)(vue@3.4.27)(webpack@5.91.0)
+    specifier: ^17.4
+    version: 17.4.2(vue@3.4.27)(webpack@5.91.0)
   webpack:
     specifier: ^5.37.1
     version: 5.91.0(webpack-cli@4.10.0)
@@ -3155,11 +3152,11 @@ packages:
     resolution: {integrity: sha512-Z0DbgELS9/L/75wZbro8xAnT50pBVFQZ+hUEueGDU5FN51YSCYM+jdxsfCiHjwNP/4LCDD0i/graKpeBnOXKRA==}
     dev: true
 
-  /vue-loader@16.8.3(@vue/compiler-sfc@3.4.27)(vue@3.4.27)(webpack@5.91.0):
-    resolution: {integrity: sha512-7vKN45IxsKxe5GcVCbc2qFU5aWzyiLrYJyUuMz4BQLKctCj/fmCa0w6fGiiQ2cLFetNcek1ppGJQDCup0c1hpA==}
+  /vue-loader@17.4.2(vue@3.4.27)(webpack@5.91.0):
+    resolution: {integrity: sha512-yTKOA4R/VN4jqjw4y5HrynFL8AK0Z3/Jt7eOJXEitsm0GMRHDBjCfCiuTiLP7OESvsZYo2pATCWhDqxC5ZrM6w==}
     peerDependencies:
-      '@vue/compiler-sfc': ^3.0.8
-      vue: ^3.2.13
+      '@vue/compiler-sfc': '*'
+      vue: '*'
       webpack: ^4.1.0 || ^5.0.0-0
     peerDependenciesMeta:
       '@vue/compiler-sfc':
@@ -3167,11 +3164,10 @@ packages:
       vue:
         optional: true
     dependencies:
-      '@vue/compiler-sfc': 3.4.27
       chalk: 4.1.2
       hash-sum: 2.0.0
-      loader-utils: 2.0.4
       vue: 3.4.27
+      watchpack: 2.4.1
       webpack: 5.91.0(webpack-cli@4.10.0)
     dev: true
 

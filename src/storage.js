@@ -20,6 +20,12 @@ export async function isEnableListen() {
     return data?.enableListen ?? false
 }
 
+export async function isEnableClientHeartbeat() {
+    const data = await chrome.storage.local.get(['enableClientHeartbeat'])
+
+    return (data?.enableClientHeartbeat ?? 'on') === 'on'
+}
+
 export async function getAllowHostRules() {
     const data = await chrome.storage.sync.get(['allowRules'])
 

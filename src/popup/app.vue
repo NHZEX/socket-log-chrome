@@ -24,6 +24,7 @@
         </div>
         <div style="max-width: 100px">
           开启：<input type="checkbox" v-model="enableListen" title="服务开关"><br />
+          监听心跳：<input type="checkbox" v-model="enableClientHeartbeat" title="监听心跳"><br />
           <button type="button" @click="onSave">保 存 / 重 连</button>
         </div>
       </div>
@@ -80,6 +81,7 @@ const enabledRuleCount = ref(0)
 const address = popupStoreRefs.address
 const clientId = popupStoreRefs.clientId
 const enableListen = popupStoreRefs.enableListen
+const enableClientHeartbeat = popupStoreRefs.enableClientHeartbeat
 
 const protocol = computed(() => popupStore.address.tls ? 'wss' : 'ws')
 const displayUrl = computed(() => `${protocol.value}://${address.value.host}:${address.value.port}${address.value.path}`)

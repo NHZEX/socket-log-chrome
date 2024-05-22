@@ -1,4 +1,4 @@
-import { isEnableListen, getAddressData, getClientId } from "../storage";
+import { isEnableListen, getAddressData, getClientId, isEnableClientHeartbeat } from "../storage";
 import {
     IMG_LOGO,
     disable_icon,
@@ -92,7 +92,9 @@ export class Client {
         };
 
         this.ws.onopen = async () => {
-            this.#heartbeatBoot();
+            if (await isEnableClientHeartbeat()) {
+                this.#heartbeatBoot();
+            }
             await set_running_state('服务连接成功');
             enable_icon();
         };
@@ -103,6 +105,7 @@ export class Client {
     }
 
     #heartbeatBoot () {
+        console.log('启动监听心跳')
         this.#heartbeatStop()
         this.#heartbeatTimer = setInterval(() => {
             this.#sendPing()

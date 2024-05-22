@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from "vue";
-import { getAddressData, getClientId, getRunningState, isEnableListen } from "../storage";
+import { getAddressData, getClientId, getRunningState, isEnableClientHeartbeat, isEnableListen } from "../storage";
 import { get } from "lodash-es";
 
 export const usePopupStore = defineStore('popup', () => {
@@ -13,11 +13,13 @@ export const usePopupStore = defineStore('popup', () => {
     })
     const clientId = ref('')
     const enableListen = ref(false);
+    const enableClientHeartbeat = ref(true);
     const stateMsg = ref('正在连接...');
 
     const loadStorageData = async () => {
         clientId.value = await getClientId()
         enableListen.value = await isEnableListen()
+        enableClientHeartbeat.value = await isEnableClientHeartbeat()
         await readStorageAddress()
         await syncStatusMessage()
 
@@ -42,6 +44,7 @@ export const usePopupStore = defineStore('popup', () => {
             address: address.value,
             clientId: clientId.value,
             enableListen: enableListen.value,
+            enableClientHeartbeat: enableClientHeartbeat.value ? 'on' : 'off',
         })
     }
 
@@ -49,6 +52,7 @@ export const usePopupStore = defineStore('popup', () => {
         address,
         clientId,
         enableListen,
+        enableClientHeartbeat,
         stateMsg,
         loadStorageData,
         syncStatusMessage,

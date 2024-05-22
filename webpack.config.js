@@ -179,6 +179,5 @@ module.exports = {
     },
     plugins: plugins,
     experiments: {
-        topLevelAwait: true,
     },
 };

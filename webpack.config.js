@@ -137,7 +137,7 @@ module.exports = {
         filename: '[name]/index.js',
         path: dist_dir,
         publicPath: './',
-        assetModuleFilename: 'assets/[hash][ext][query]',
+        assetModuleFilename: 'assets/[contenthash][ext][query]',
         clean: true,
     },
     resolve: {

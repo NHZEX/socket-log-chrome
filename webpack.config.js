@@ -2,7 +2,6 @@ const path = require('path');
 const fs = require('fs');
 const webpack = require('webpack');
 const HtmlPlugin = require('html-webpack-plugin');
-const CleanPlugin = require('clean-webpack-plugin').CleanWebpackPlugin;
 const CopyPlugin = require('copy-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const VueLoaderPlugin = require('vue-loader').VueLoaderPlugin;
@@ -46,11 +45,8 @@ function getResourcesList()
 }
 
 const plugins = [
-    new webpack.DefinePlugin({
-        __VUE_PROD_DEVTOOLS__: process.env.NODE_ENV === 'development',
-    }),
+    new webpack.DefinePlugin({}),
     new VueLoaderPlugin(),
-    new CleanPlugin(),
     new CopyPlugin({
         patterns: [
             {
@@ -121,6 +117,7 @@ module.exports = {
         path: dist_dir,
         publicPath: './',
         assetModuleFilename: 'assets/[hash][ext][query]',
+        clean: true,
     },
     resolve: {
         alias: {

@@ -138,7 +138,6 @@ export default {
     }
 
     const refreshEnableRuleCount = async () => {
-      console.log('refreshEnableRuleCount')
       enabledRuleCount.value = (await chrome.declarativeNetRequest.getDynamicRules()).length;
     }
     let _tidRefreshEnableRuleCount = null

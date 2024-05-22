@@ -62,14 +62,22 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 //     console.log('tabsOnUpdated', tabId, changeInfo, tab)
 // });
 
-chrome.storage.local.onChanged.addListener(async ({ clientId }) => {
-    if (clientId === undefined) {
-        return
+chrome.storage.local.onChanged.addListener(async ({ clientId, enableListen }) => {
+    if (clientId !== undefined) {
+        const { newValue, oldValue } = clientId
+        if (newValue !== oldValue) {
+            console.log('clientId.onChanged', newValue, oldValue)
+            await installRequestHandleRules()
+            return
+        }
     }
-    const { newValue, oldValue } = clientId
-    console.log('clientId.onChanged', newValue, oldValue)
-    if (newValue !== oldValue) {
-        await installRequestHandleRules()
+    if (enableListen !== undefined) {
+        const { newValue, oldValue } = enableListen
+        if (newValue !== oldValue) {
+            console.log('enableListen.onChanged', newValue, oldValue)
+            await installRequestHandleRules()
+            return
+        }
     }
 })
 

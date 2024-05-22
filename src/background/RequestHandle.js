@@ -1,14 +1,21 @@
-import { getAllowHostRules, getClientId } from "../storage";
+import { getAllowHostRules, getClientId, isEnableListen } from "../storage";
 import { IMG_LOGO } from "../helper";
 
 export async function installRequestHandleRules () {
     const clientId = await getClientId()
+    const enableListen = await isEnableListen()
 
     if (!clientId) {
         console.log('InstallRequestHandleRules: client is empty, stop handle')
         await removeRequestHandleRules()
         return
     }
+    if (enableListen === false) {
+        console.log('InstallRequestHandleRules: enableListen is false, stop handle')
+        await removeRequestHandleRules()
+        return
+    }
+
     console.log(`InstallRequestHandleRules: client = ${clientId}`)
 
     const userAgent = `${navigator.userAgent} SocketLog(tabid=0&client_id=${clientId})`

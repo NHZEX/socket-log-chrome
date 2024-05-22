@@ -1,14 +1,12 @@
 {
   "name": "socketlog-plus",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "private": true,
   "engines": {
-    "node": ">= 12.10",
-    "npm": ">=6",
-    "yarn": ">=1"
+    "node": ">= 14.21"
   },
   "dependencies": {
-    "lodash": "^4.17.21",
+    "lodash-es": "^4.17.21",
     "vue": "^3.4",
     "vuex": "^4.0.0"
   },
@@ -17,7 +15,6 @@
     "@babel/preset-env": "^7.14.2",
     "@types/chrome": "^0.0.268",
     "babel-loader": "^8.2.2",
-    "babel-plugin-lodash": "^3.3.4",
     "clean-webpack-plugin": "^4.0.0-alpha.0",
     "copy-webpack-plugin": "^9.0.0",
     "cross-env": "^7.0.3",
@@ -50,6 +47,6 @@
     "not samsung < 999"
   ],
   "volta": {
-    "node": "14.21.3"
+    "node": "16.20.2"
   }
 }

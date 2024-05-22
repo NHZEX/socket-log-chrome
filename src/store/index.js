@@ -1,5 +1,5 @@
 import { createStore } from 'vuex'
-import { get } from 'lodash'
+import { get } from 'lodash-es'
 import { getAddressData, getClientId, getRunningState, isEnableListen } from "../storage";
 
 export default createStore({

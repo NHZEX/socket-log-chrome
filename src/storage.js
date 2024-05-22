@@ -1,4 +1,4 @@
-import { get, has } from "lodash";
+import { get, has } from "lodash-es";
 import { installRequestHandleRules } from "./background/RequestHandle";
 import { IMG_LOGO } from "./helper";
 

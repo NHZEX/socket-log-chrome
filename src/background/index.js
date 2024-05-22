@@ -1,18 +1,8 @@
 import { installRequestHandleRules } from './RequestHandle'
+import { isObject } from "lodash-es";
 import {
-    enable_icon,
-    disable_icon,
-    badge_normal_bright,
-    badge_normal_destroy,
-    badge_error_bright,
-    badge_error_destroy
-} from 'src/helper'
-import { isObject } from "lodash";
-import {
-    getAddressData,
-    getClientId,
-    isEnableListen,
-    migrateSetting, listenerAllowHostRulesChanged
+    migrateSetting,
+    listenerAllowHostRulesChanged
 } from "../storage";
 import { Client } from "./ListenerClient";
 

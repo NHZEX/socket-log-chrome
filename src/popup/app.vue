@@ -64,8 +64,7 @@
 <script>
 
 import { reactive, computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useStore, mapState } from 'vuex'
-import { isObject } from 'lodash'
+import { useStore } from 'vuex'
 import { restartConnection } from 'src/helper'
 import { getAllowHostRules, setAllowHosts } from "../storage";
 

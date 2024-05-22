@@ -1,10 +1,11 @@
 import 'src/assets/style/popup.css'
 
 import { createApp } from 'vue'
-import store from '@/store'
+import { createPinia } from 'pinia'
 import App from './App.vue'
 
+const pinia = createPinia()
+const app = createApp(App)
 
-createApp(App)
-    .use(store)
-    .mount('#app')
+app.use(pinia)
+app.mount('#app')

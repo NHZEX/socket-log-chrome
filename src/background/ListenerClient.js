@@ -70,13 +70,14 @@ export class Client {
 
         if (this.ws) {
             //避免重复监听
-            this.ws.onclose = () => {}; //onclose 函数置空，防止重复链接
-            // 如果 websocket 未关闭则关闭链接
+            this.ws.onclose = () => {}; //onclose 函数置空，防止重复连接
+            // 如果 websocket 未关闭则关闭连接
             if (WebSocket.CLOSED !== this.ws.readyState) {
                 this.ws.close();
             }
         }
 
+        await set_running_state('服务连接中');
         this.ws = new WebSocket(address);
 
         this.ws.onerror = (msg) => {
@@ -89,7 +90,7 @@ export class Client {
         };
 
         this.ws.onopen = async () => {
-            await set_running_state('服务链接成功');
+            await set_running_state('服务连接成功');
             enable_icon();
         };
 

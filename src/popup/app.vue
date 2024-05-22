@@ -63,8 +63,8 @@
 
 <script>
 
-import { reactive, computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useStore } from 'vuex'
+import { reactive, computed, onMounted, onUnmounted, ref, watch, toRef } from 'vue'
+import { usePopupStore } from 'src/stores/popupStore'
 import { restartConnection } from 'src/helper'
 import { getAllowHostRules, setAllowHosts } from "../storage";
 
@@ -73,27 +73,19 @@ export default {
   components: {
   },
   setup() {
-    const store = useStore()
-    store.dispatch('loadStorageData')
+    const popupStore = usePopupStore()
+
+    popupStore.loadStorageData()
 
     const allowHosts = ref([])
     const enabledRuleCount = ref(0)
 
     const data = reactive({
-      stateMsg: computed(() => store.state.stateMsg),
-      address: computed({
-        get: () => store.state.address,
-        set: val => store.commit('updateAddress', val),
-      }),
-      clientId: computed({
-        get: () => store.state.clientId,
-        set: val => store.commit('updateClient', val),
-      }),
-      enable: computed({
-        get: () => store.state.enableListen,
-        set: val => store.commit('setEnable', val),
-      }),
-      protocol: computed(() => store.state.address.tls ? 'wss' : 'ws'),
+      stateMsg: computed(() => popupStore.stateMsg),
+      address: toRef(() => popupStore.address),
+      clientId: toRef(() => popupStore.clientId),
+      enable: toRef(() => popupStore.enableListen),
+      protocol: computed(() => popupStore.address.tls ? 'wss' : 'ws'),
       displayUrl: computed(() => `${data.protocol}://${data.address.host}:${data.address.port}${data.address.path}`),
       // 域名配置
       allowHosts: computed({
@@ -113,7 +105,7 @@ export default {
     })
 
     const onSave = () => {
-      store.dispatch('saveStorageData')
+      popupStore.saveStorageData()
       restartConnection();
     }
 
@@ -132,7 +124,7 @@ export default {
       const { newValue, oldValue } = statusMessage
       console.log('session.onChanged', newValue, oldValue)
       if (newValue !== oldValue) {
-        store.commit('updateState', newValue)
+        popupStore.stateMsg = newValue
       }
     }
 

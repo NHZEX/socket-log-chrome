@@ -5,6 +5,7 @@ const HtmlPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const VueLoaderPlugin = require('vue-loader').VueLoaderPlugin;
+const FileManagerPlugin = require('filemanager-webpack-plugin');
 
 const packageJson = JSON.parse(fs.readFileSync(path.resolve('./package.json')).toString())
 
@@ -96,6 +97,26 @@ const plugins = [
         chunks: [],
     }),
 ]
+if (process.env.NODE_ENV === 'production') {
+    const DIST_FILENAME = 'release.zip'
+    plugins.push(
+        new FileManagerPlugin({
+            events: {
+                onStart: {
+                    delete: ['./' + DIST_FILENAME],
+                },
+                onEnd: {
+                    archive: [
+                        {
+                            source: dist_dir,
+                            destination: './' + DIST_FILENAME,
+                        }
+                    ],
+                },
+            }
+        })
+    )
+}
 
 if (process.env.npm_config_report) {
     plugins.push(new BundleAnalyzerPlugin())

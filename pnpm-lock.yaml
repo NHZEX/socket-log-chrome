@@ -12,27 +12,24 @@ dependencies:
     specifier: ^2.1.7
     version: 2.1.7(vue@3.4.27)
   vue:
-    specifier: ^3.4
+    specifier: ^3.4.27
     version: 3.4.27
-  vuex:
-    specifier: ^4.0.0
-    version: 4.1.0(vue@3.4.27)
 
 devDependencies:
   '@babel/core':
-    specifier: ^7.14.3
+    specifier: ^7.24.5
     version: 7.24.5
   '@babel/preset-env':
-    specifier: ^7.14.2
+    specifier: ^7.24.5
     version: 7.24.5(@babel/core@7.24.5)
   '@types/chrome':
     specifier: ^0.0.268
     version: 0.0.268
   babel-loader:
-    specifier: ^8.2.2
+    specifier: ^8.3.0
     version: 8.3.0(@babel/core@7.24.5)(webpack@5.91.0)
   copy-webpack-plugin:
-    specifier: ^12.0
+    specifier: ^12.0.2
     version: 12.0.2(webpack@5.91.0)
   cross-env:
     specifier: ^7.0.3
@@ -44,13 +41,13 @@ devDependencies:
     specifier: ^8.0.0
     version: 8.0.0(webpack@5.91.0)
   html-webpack-plugin:
-    specifier: ^5.3.1
+    specifier: ^5.6.0
     version: 5.6.0(webpack@5.91.0)
   style-loader:
-    specifier: ^3.3.3
+    specifier: ^3.3.4
     version: 3.3.4(webpack@5.91.0)
   vue-loader:
-    specifier: ^17.4
+    specifier: ^17.4.2
     version: 17.4.2(vue@3.4.27)(webpack@5.91.0)
   webpack:
     specifier: ^5.91.0
@@ -1846,7 +1843,7 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001620
+      caniuse-lite: 1.0.30001621
       electron-to-chromium: 1.4.777
       node-releases: 2.0.14
       update-browserslist-db: 1.0.16(browserslist@4.23.0)
@@ -1874,8 +1871,8 @@ packages:
       tslib: 2.6.2
     dev: true
 
-  /caniuse-lite@1.0.30001620:
-    resolution: {integrity: sha512-WJvYsOjd1/BYUY6SNGUosK9DUidBPDTnOARHp3fSmFO1ekdxaY6nKRttEVrfMmYi80ctS0kz1wiWmm14fVc3ew==}
+  /caniuse-lite@1.0.30001621:
+    resolution: {integrity: sha512-+NLXZiviFFKX0fk8Piwv3PfLPGtRqJeq2TiNoUff/qB5KJgwecJTvCXDpmlyP/eCI/GUEmp/h/y5j0yckiiZrA==}
     dev: true
 
   /chalk@2.4.2:
@@ -3504,15 +3501,6 @@ packages:
       '@vue/runtime-dom': 3.4.27
       '@vue/server-renderer': 3.4.27(vue@3.4.27)
       '@vue/shared': 3.4.27
-
-  /vuex@4.1.0(vue@3.4.27):
-    resolution: {integrity: sha512-hmV6UerDrPcgbSy9ORAtNXDr9M4wlNP4pEFKye4ujJF8oqgFFuxDCdOLS3eNoRTtq5O3hoBDh9Doj1bQMYHRbQ==}
-    peerDependencies:
-      vue: ^3.2.0
-    dependencies:
-      '@vue/devtools-api': 6.6.1
-      vue: 3.4.27
-    dev: false
 
   /watchpack@2.4.1:
     resolution: {integrity: sha512-8wrBCMtVhqcXP2Sup1ctSkga6uc2Bx0IIvKyT7yTFier5AXHooSI+QyQQAtTb7+E0IUCCKyTFmXqdqgum2XWGg==}

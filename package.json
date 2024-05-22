@@ -8,21 +8,20 @@
   "dependencies": {
     "lodash-es": "^4.17.21",
     "pinia": "^2.1.7",
-    "vue": "^3.4",
-    "vuex": "^4.0.0"
+    "vue": "^3.4.27"
   },
   "devDependencies": {
-    "@babel/core": "^7.14.3",
-    "@babel/preset-env": "^7.14.2",
+    "@babel/core": "^7.24.5",
+    "@babel/preset-env": "^7.24.5",
     "@types/chrome": "^0.0.268",
-    "babel-loader": "^8.2.2",
-    "copy-webpack-plugin": "^12.0",
+    "babel-loader": "^8.3.0",
+    "copy-webpack-plugin": "^12.0.2",
     "cross-env": "^7.0.3",
     "css-loader": "^7.1.1",
     "filemanager-webpack-plugin": "^8.0.0",
-    "html-webpack-plugin": "^5.3.1",
-    "style-loader": "^3.3.3",
-    "vue-loader": "^17.4",
+    "html-webpack-plugin": "^5.6.0",
+    "style-loader": "^3.3.4",
+    "vue-loader": "^17.4.2",
     "webpack": "^5.91.0",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^5.1.4"

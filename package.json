@@ -32,19 +32,10 @@
     "analyz": "cross-env npm_config_report=true NODE_ENV=production webpack"
   },
   "browserslist": [
-    "defaults",
-    "> 5%",
-    "not dead",
-    "not IE 11",
-    "not op_mini all",
-    "not kaios < 999",
-    "not and_qq < 999",
-    "not and_uc < 999",
-    "not baidu < 999",
-    "not ios_saf < 999",
-    "not op_mob < 999",
-    "not safari < 999",
-    "not samsung < 999"
+    "Chrome >= 116",
+    "Edge >= 116",
+    "Firefox >= 106",
+    "not dead"
   ],
   "volta": {
     "node": "18.20.3"

@@ -137,13 +137,26 @@ export default {
       }
     }
 
+    const refreshEnableRuleCount = async () => {
+      console.log('refreshEnableRuleCount')
+      enabledRuleCount.value = (await chrome.declarativeNetRequest.getDynamicRules()).length;
+    }
+    let _tidRefreshEnableRuleCount = null
+
     onMounted(async () => {
       chrome.storage.session.onChanged.addListener(onMessage);
       allowHosts.value = await getAllowHostRules();
-      enabledRuleCount.value = (await chrome.declarativeNetRequest.getDynamicRules()).length;
+      await refreshEnableRuleCount()
+
+      _tidRefreshEnableRuleCount = setInterval(async () => await refreshEnableRuleCount(), 1000)
     })
     onUnmounted(() => {
       chrome.storage.session.onChanged.removeListener(onMessage)
+
+      if (_tidRefreshEnableRuleCount) {
+        _tidRefreshEnableRuleCount = null
+        clearInterval(_tidRefreshEnableRuleCount)
+      }
     })
 
     return {

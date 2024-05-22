@@ -14,7 +14,7 @@
     "@babel/core": "^7.24.5",
     "@babel/preset-env": "^7.24.5",
     "@types/chrome": "^0.0.268",
-    "babel-loader": "^8.3.0",
+    "babel-loader": "^9.1.3",
     "copy-webpack-plugin": "^12.0.2",
     "cross-env": "^7.0.3",
     "css-loader": "^7.1.1",

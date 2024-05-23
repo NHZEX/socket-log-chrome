@@ -66,6 +66,18 @@ export function badge_error_destroy() {
     ])
 }
 
+export async function set_running_state(message) {
+    await chrome.storage.session.set({
+        status_message: message
+    });
+}
+
+export async function set_e2e_state(message) {
+    await chrome.storage.session.set({
+        e2e_status: message
+    });
+}
+
 export async function restartConnection() {
     // todo 通过事件实现
     await chrome.runtime.sendMessage(
@@ -76,3 +88,28 @@ export async function restartConnection() {
 
     )
 }
+
+export function notifications (title, message, timeout = 5000) {
+    chrome.notifications.create(null,  {
+        type: "basic",
+        title: title,
+        message: message,
+        iconUrl: IMG_LOGO,
+    }, (id) => {
+        setTimeout(function () {
+            chrome.notifications.clear(id);
+        }, timeout);
+    });
+}
+
+export function createRandomString(length) {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "";
+    const randomArray = new Uint8Array(length);
+    crypto.getRandomValues(randomArray);
+    randomArray.forEach((number) => {
+        result += chars[number % chars.length];
+    });
+    return result;
+}
+

@@ -2,7 +2,8 @@ import { installRequestHandleRules } from './RequestHandle'
 import { isObject } from "lodash-es";
 import {
     migrateSetting,
-    listenerAllowHostRulesChanged
+    listenerAllowHostRulesChanged,
+    listenerE2EConfigChanged,
 } from "../storage";
 import { Client } from "./ListenerClient";
 
@@ -76,6 +77,10 @@ listenerAllowHostRulesChanged(async () => {
 })
 
 const wsc = new Client()
+
+listenerE2EConfigChanged(async () => {
+    await wsc.e2eReload()
+})
 
 ;(async () => {
     await wsc.init()

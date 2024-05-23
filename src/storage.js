@@ -1,4 +1,4 @@
-import { get, has } from "lodash-es";
+import { get, has, isEqual } from "lodash-es";
 import { installRequestHandleRules } from "./background/RequestHandle";
 import { IMG_LOGO } from "./helper";
 
@@ -24,6 +24,21 @@ export async function isEnableClientHeartbeat() {
     const data = await chrome.storage.local.get(['enableClientHeartbeat'])
 
     return (data?.enableClientHeartbeat ?? 'on') === 'on'
+}
+
+export async function getE2EConfig() {
+    const data = await chrome.storage.local.get(['e2eConfig'])
+
+    return {
+        key: '',
+        ...(data?.e2eConfig ?? {})
+    }
+}
+
+export async function saveE2EConfig(config) {
+    await chrome.storage.local.set({
+        e2eConfig: config,
+    })
 }
 
 export async function getAllowHostRules() {
@@ -63,10 +78,29 @@ export function listenerAllowHostRulesChanged(cb) {
     })
 }
 
+export function listenerE2EConfigChanged(cb) {
+    chrome.storage.local.onChanged.addListener(async ({ e2eConfig }) => {
+        if (e2eConfig === undefined) {
+            return
+        }
+        const { newValue, oldValue } = e2eConfig
+        console.log('e2eConfig.onChanged', newValue, oldValue)
+        if (!isEqual(newValue, oldValue)) {
+            cb()
+        }
+    })
+}
+
 export async function getRunningState() {
     const data = await chrome.storage.session.get(['status_message']);
     return data?.status_message ?? ''
 }
+
+export async function getE2EState() {
+    const data = await chrome.storage.session.get(['e2e_status']);
+    return data?.e2e_status ?? ''
+}
+
 
 let creating; // A global promise to avoid concurrency issues
 async function setupOffscreenDocument(path, reasons, justification) {

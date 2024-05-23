@@ -1,33 +1,20 @@
-import { isEnableListen, getAddressData, getClientId, isEnableClientHeartbeat } from "../storage";
 import {
-    IMG_LOGO,
+    isEnableListen,
+    getAddressData,
+    getClientId,
+    isEnableClientHeartbeat, getE2EConfig,
+} from "../storage";
+import {
     disable_icon,
     enable_icon,
     badge_error_bright,
     badge_error_destroy,
     badge_normal_bright,
-    badge_normal_destroy
+    badge_normal_destroy,
+    set_running_state,
+    notifications,
 } from "../helper";
-
-async function set_running_state(message) {
-    await chrome.storage.session.set({
-        status_message: message
-    });
-}
-
-function notifications (title, message, timeout, id) {
-    let opt = {
-        type: "basic",
-        title: title,
-        message: message,
-        iconUrl: IMG_LOGO
-    };
-    chrome.notifications.create(id, opt, (id) => {
-        setTimeout(function () {
-            chrome.notifications.clear(id, () => {});
-        }, timeout);
-    });
-}
+import { MessageProcessor } from "./MessageProcessor";
 
 export class Client {
     address = {
@@ -41,11 +28,18 @@ export class Client {
     #reconnectionTimer = 0
     #heartbeatTimer = 0
 
-    constructor () {}
+    /**
+     * @var { MessageProcessor }
+     */
+    #messageProcessor
 
-    async init () {
+    constructor () {
+        this.#messageProcessor = new MessageProcessor()
+    }
+
+    async init (options = {}) {
         if (await isEnableListen() === false) {
-            console.log('当前监听状态：禁用')
+            console.info('当前监听状态：禁用')
             if (this.ws && (WebSocket.CLOSED !== this.ws.readyState || WebSocket.CLOSING !== this.ws.readyState)) {
                 this.ws.close();
             }
@@ -79,19 +73,23 @@ export class Client {
         }
 
         await set_running_state('服务连接中');
-        this.ws = new WebSocket(address);
+        if ((options?.isAutoReconnection ?? false) === false) {
+            await this.e2eReload()
+        }
+        const socket = new WebSocket(address);
+        socket.binaryType = 'arraybuffer'
 
-        this.ws.onerror = (msg) => {
+        socket.onerror = (msg) => {
             console.warn('websocket: ', msg)
             this.#onClone('服务连接失败')
         };
 
-        this.ws.onclose = () => {
+        socket.onclose = () => {
             this.#heartbeatStop()
             this.#onClone('服务已经关闭')
         };
 
-        this.ws.onopen = async () => {
+        socket.onopen = async () => {
             if (await isEnableClientHeartbeat()) {
                 this.#heartbeatBoot();
             }
@@ -99,13 +97,20 @@ export class Client {
             enable_icon();
         };
 
-        this.ws.onmessage = async e => {
+        socket.onmessage = async e => {
             await this.#onMessage(e)
         };
+
+        this.ws = socket;
+    }
+
+    async e2eReload () {
+        console.info('[e2e] reload')
+        await this.#messageProcessor.loadE2EConfig(await getE2EConfig())
     }
 
     #heartbeatBoot () {
-        console.log('启动监听心跳')
+        console.debug('启动监听心跳')
         this.#heartbeatStop()
         this.#heartbeatTimer = setInterval(() => {
             this.#sendPing()
@@ -124,9 +129,18 @@ export class Client {
     }
 
     async #onMessage (event) {
-        if (event.data instanceof ArrayBuffer || event.data instanceof Blob) {
+        if (event.data instanceof Blob) {
             // 暂未使用的二进制数据
             return
+        }
+        let content
+        if (event.data instanceof ArrayBuffer) {
+            content = await this.#messageProcessor.parseBinaryMessage(event.data)
+            if (content === false) {
+                return
+            }
+        } else {
+            content = event.data
         }
 
         let client_id = await getClientId();
@@ -138,25 +152,14 @@ export class Client {
             // tabid: null,
         };
         try {
-            let data = JSON.parse(event.data);
+            let data = JSON.parse(content);
             result.client_id = data['client_id'];
             result.force_client_id = data['force_client_id'];
             result.logs = data['logs'];
             // result.tabid = data['tabid'];
         } catch (e) {
             badge_error_bright();
-            let opt = {
-                type: "basic",
-                title: "日志格式无法解析(no json)",
-                message: event.data,
-                iconUrl: IMG_LOGO
-            };
-            chrome.notifications.create(null, opt, function (id) {
-                setTimeout(function () {
-                    chrome.notifications.clear(id, function () {
-                    });
-                }, 5000);
-            });
+            notifications('日志内容无法解析', '解码 json 异常: ' + e)
             badge_error_destroy();
             return;
         }
@@ -188,7 +191,9 @@ export class Client {
     #onClone (stateMessage) {
         clearTimeout(this.#reconnectionTimer);
         this.#reconnectionTimer = setTimeout(() => {
-            this.init()
+            this.init({
+                isAutoReconnection: true,
+            })
         }, 2000);
         set_running_state(stateMessage);
         disable_icon();

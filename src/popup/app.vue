@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper clearfix">
     <div class="title">
-      SocketLog 设置 （状态：<span>{{ stateMessage }}</span>）
+      SocketLog 设置 （状态：<span>{{ stateMessage }}{{ e2eStateMessage ? `; ${e2eStateMessage}` : '' }}</span>）
       <div class="help">
         <a href="https://github.com/NHZEX/socket-log-chrome" title="帮助" target="_blank">
           <img src="@/assets/image/help_16.png" alt="help"/>
@@ -29,6 +29,21 @@
         </div>
       </div>
     </form>
+    <div style="width: 100%">
+      <span style="display: block; width: 100%; border-bottom: #999999 2px dotted; height: 4px" />
+      <label>端到端加密密钥：</label>
+      <div>
+        <input
+            type="password"
+            v-model.trim="e2eConfig.key"
+            title="密钥长度最少 8 位"
+            autocomplete="off"
+            style="margin-right: 8px"
+        >
+        <button type="button" @click="onSave_e2eKey">保存密钥</button>
+        <button type="button" @click="onGenerate_e2eKey" style="float: right">生成</button>
+      </div>
+    </div>
     <div style="width: 100%">
       <span style="display: block; width: 100%; border-bottom: #999999 2px dotted; height: 4px" />
       <label>允许监听域名：</label>
@@ -66,7 +81,7 @@
 
 import { reactive, computed, onMounted, onUnmounted, ref, watch, toRef } from 'vue'
 import { usePopupStore } from 'src/stores/popupStore'
-import { restartConnection } from 'src/helper'
+import { createRandomString, restartConnection } from 'src/helper'
 import { getAllowHostRules, setAllowHosts } from "../storage";
 import { storeToRefs } from "pinia";
 
@@ -78,6 +93,8 @@ popupStore.loadStorageData()
 const allowHosts = ref([])
 const enabledRuleCount = ref(0)
 
+const e2eConfig = popupStoreRefs.e2eConfig
+
 const address = popupStoreRefs.address
 const clientId = popupStoreRefs.clientId
 const enableListen = popupStoreRefs.enableListen
@@ -87,6 +104,7 @@ const protocol = computed(() => popupStore.address.tls ? 'wss' : 'ws')
 const displayUrl = computed(() => `${protocol.value}://${address.value.host}:${address.value.port}${address.value.path}`)
 
 const stateMessage = computed(() => popupStore.stateMsg)
+const e2eStateMessage = computed(() => popupStore.e2eStateMessage)
 
 // 域名配置
 const allowRulesEdit = computed({
@@ -109,6 +127,14 @@ const onSave = () => {
   restartConnection();
 }
 
+const onGenerate_e2eKey = async () => {
+  e2eConfig.value.key = createRandomString(16)
+}
+
+const onSave_e2eKey = async () => {
+  await popupStore.saveE2EConfigData()
+}
+
 const onSaveAllowHosts = async () => {
   try {
     allowHosts.value = await setAllowHosts(allowHosts.value)
@@ -117,14 +143,20 @@ const onSaveAllowHosts = async () => {
   }
 }
 
-const onMessage = ({ status_message: statusMessage }) => {
-  if (statusMessage === undefined) {
-    return
+const onMessage = ({ status_message: statusMessage, e2e_status: e2eStateMessage }) => {
+  if (statusMessage !== undefined) {
+    const { newValue, oldValue } = statusMessage
+    console.log('statusMessage.onChanged', newValue, oldValue)
+    if (newValue !== oldValue) {
+      popupStore.stateMsg = newValue
+    }
   }
-  const { newValue, oldValue } = statusMessage
-  console.log('session.onChanged', newValue, oldValue)
-  if (newValue !== oldValue) {
-    popupStore.stateMsg = newValue
+  if (e2eStateMessage !== undefined) {
+    const { newValue, oldValue } = e2eStateMessage
+    console.log('e2eStateMessage.onChanged', newValue, oldValue)
+    if (newValue !== oldValue) {
+      popupStore.e2eStateMessage = newValue
+    }
   }
 }
 

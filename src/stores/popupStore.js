@@ -1,6 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref } from "vue";
-import { getAddressData, getClientId, getRunningState, isEnableClientHeartbeat, isEnableListen } from "../storage";
+import {
+    getAddressData,
+    getClientId,
+    getE2EConfig,
+    saveE2EConfig,
+    getRunningState,
+    isEnableClientHeartbeat,
+    isEnableListen, getE2EState,
+} from "../storage";
 import { get } from "lodash-es";
 
 export const usePopupStore = defineStore('popup', () => {
@@ -15,6 +23,11 @@ export const usePopupStore = defineStore('popup', () => {
     const enableListen = ref(false);
     const enableClientHeartbeat = ref(true);
     const stateMsg = ref('正在连接...');
+    const e2eStateMessage = ref('');
+
+    const e2eConfig = ref({
+        key: '',
+    })
 
     const loadStorageData = async () => {
         clientId.value = await getClientId()
@@ -22,6 +35,8 @@ export const usePopupStore = defineStore('popup', () => {
         enableClientHeartbeat.value = await isEnableClientHeartbeat()
         await readStorageAddress()
         await syncStatusMessage()
+
+        e2eConfig.value = await getE2EConfig()
 
         console.log('加载存储数据完成', {
             address: address.value,
@@ -31,6 +46,7 @@ export const usePopupStore = defineStore('popup', () => {
     }
     const syncStatusMessage = async () => {
         stateMsg.value = await getRunningState() || '无状态'
+        e2eStateMessage.value = await getE2EState() || ''
     }
     const readStorageAddress = async () => {
         const data = await getAddressData()
@@ -48,15 +64,22 @@ export const usePopupStore = defineStore('popup', () => {
         })
     }
 
+    const saveE2EConfigData = async () => {
+        await saveE2EConfig(e2eConfig.value)
+    }
+
     return {
         address,
         clientId,
         enableListen,
         enableClientHeartbeat,
         stateMsg,
+        e2eStateMessage,
+        e2eConfig,
         loadStorageData,
         syncStatusMessage,
         readStorageAddress,
         saveStorageData,
+        saveE2EConfigData,
     }
 })

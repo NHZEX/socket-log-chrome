@@ -1,6 +1,6 @@
 {
   "name": "socketlog-plus",
-  "version": "3.0.3",
+  "version": "3.1.0",
   "private": true,
   "engines": {
     "node": ">= 18.20"
@@ -34,7 +34,7 @@
   "browserslist": [
     "Chrome >= 116",
     "Edge >= 116",
-    "Firefox >= 106",
+    "Firefox >= 113",
     "not dead"
   ],
   "volta": {

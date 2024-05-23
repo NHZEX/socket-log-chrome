@@ -6,18 +6,30 @@ import {
 export
 class MessageProcessor {
 
+    clientId = null
     /**
      * @type {null | self.crypto.subtle.CryptoKey}
      */
     aseKey = null
+    /**
+     * @type {ArrayBuffer}
+     */
+    aseAdd = null
     enableE2E = false
     e2eErrorCount = 0
 
     constructor () {
     }
 
-    async loadE2EConfig (config)
+    async loadE2EConfig (clientId, config)
     {
+        this.clientId = clientId
+        const addContent = new TextEncoder().encode(`SL-E2E_${this.clientId}`, 'utf-8')
+        this.aseAdd = await self.crypto.subtle.digest(
+            'SHA-256',
+            addContent.buffer
+        )
+
         if (config?.key && config.key.length >= 8) {
             const keyBinary = new TextEncoder().encode(config.key, 'utf-8')
             const keyHash = await self.crypto.subtle.digest(
@@ -156,13 +168,11 @@ class MessageProcessor {
         const iv = binary.slice(0, 12)
         const ciphertext = binary.slice(12)
 
-        const addBinary = new TextEncoder().encode('4EX3TWCD', 'utf-8')
-
         return await self.crypto.subtle.decrypt(
             {
                 name: "AES-GCM",
                 iv,
-                additionalData: addBinary.buffer,
+                additionalData: this.aseAdd,
                 tagLength: 128,
             },
             this.aseKey,

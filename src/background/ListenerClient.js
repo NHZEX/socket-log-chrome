@@ -106,7 +106,10 @@ export class Client {
 
     async e2eReload () {
         console.info('[e2e] reload')
-        await this.#messageProcessor.loadE2EConfig(await getE2EConfig())
+        await this.#messageProcessor.loadE2EConfig(
+            await getClientId(),
+            await getE2EConfig(),
+        )
     }
 
     #heartbeatBoot () {

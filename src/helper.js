@@ -1,6 +1,10 @@
-const IMG_LOGO_X16 = chrome.runtime.getURL(require('src/assets/image/logo_16.png'));
-const IMG_LOGO_DISABLED_X16 = chrome.runtime.getURL(require('src/assets/image/logo_disabled_16.png'));
-export const IMG_LOGO = chrome.runtime.getURL(require('src/assets/image/logo_320.png'));
+import _imgLogoX16 from 'src/assets/image/logo_16.png'
+import _imgLogoDisabledX16 from 'src/assets/image/logo_disabled_16.png'
+import _imgLogoX320 from 'src/assets/image/logo_320.png'
+
+const IMG_LOGO_X16 = chrome.runtime.getURL(_imgLogoX16);
+const IMG_LOGO_DISABLED_X16 = chrome.runtime.getURL(_imgLogoDisabledX16);
+export const IMG_LOGO = chrome.runtime.getURL(_imgLogoX320);
 
 // 下标两/灭
 const BADGE_BRIGHT = ' ';

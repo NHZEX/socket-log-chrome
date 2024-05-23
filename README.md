@@ -13,6 +13,12 @@
 
 > 各个新特性均不支持 [nodejs 版本的服务端](https://github.com/luofei614/SocketLog/tree/master/server)
 
+### 配套框架驱动
+
+composer require [zxin/socket-log-thinkphp](https://github.com/NHZEX/socket-log-thinkphp)
+
+> 各个新特性均不支持`thinkphp`原版驱动
+
 ### 资料
 
 Fork [luofei614/SocketLog](https://github.com/luofei614/SocketLog)

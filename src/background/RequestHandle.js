@@ -18,7 +18,8 @@ export async function installRequestHandleRules () {
 
     console.log(`InstallRequestHandleRules: client = ${clientId}`)
 
-    const userAgent = `${navigator.userAgent} SocketLog(tabid=0&client_id=${clientId})`
+    // todo 兼容性解决方案 tabId 填充假值，接受端需要调整 tabId 处理逻辑
+    const userAgent = `${navigator.userAgent} SocketLog(tabid=999999&client_id=${clientId})`
 
     const filters = await getAllowHostRules()
     /**

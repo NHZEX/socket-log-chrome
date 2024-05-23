@@ -28,7 +28,7 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
             await migrateSetting()
         }, 0)
     }
-    if (reason === 'install' || reason === 'chrome_update') {
+    if (reason === 'install' || reason === 'update' || reason === 'chrome_update') {
         await installRequestHandleRules()
     }
 });

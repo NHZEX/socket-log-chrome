@@ -16,6 +16,70 @@ const dist_dir = process.env.NODE_ENV === 'production'
 
 // const pages = {}
 
+class MyReplaceImagePlugin {
+    constructor(options) {
+        this.options = options;
+    }
+
+    apply(compiler) {
+        compiler.hooks.thisCompilation.tap('MyReplaceImagePlugin', (compilation) => {
+            compilation.hooks.processAssets.tapAsync(
+                {
+                    name: 'MyReplaceImagePlugin',
+                    stage: compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
+                },
+                (assets, callback) => {
+                    const { replacements } = this.options;
+                    replacements.forEach((options) => {
+                        // const rootDir = compiler.options.context
+                        this.replaceFiles({
+                            assets,
+                            options,
+                        });
+                    });
+                    callback();
+                }
+            );
+        });
+    }
+
+    replaceFiles({
+                     assets,
+                     options: { from, to },
+                 }) {
+        from = from.trim('/').concat('/')
+
+        for (const [targetPath] of Object.entries(assets)) {
+            if (!targetPath.startsWith(from)) {
+                continue
+            }
+            const targetName = targetPath.replace(from, '')
+            const toFilePath = path.join(to, targetName);
+
+            if (fs.existsSync(toFilePath)) {
+                const toContent = fs.readFileSync(toFilePath);
+                assets[targetPath] = {
+                    source: () => toContent,
+                    size: () => toContent.length,
+                };
+            }
+        }
+    }
+
+    getFiles(dir, fileList = []) {
+        const files = fs.readdirSync(dir);
+        files.forEach(file => {
+            const filePath = path.join(dir, file);
+            if (fs.statSync(filePath).isDirectory()) {
+                this.getFiles(filePath, fileList);
+            } else {
+                fileList.push(filePath);
+            }
+        });
+        return fileList;
+    }
+}
+
 function enumerateFiles(directory) {
     const files = [];
 
@@ -45,6 +109,9 @@ function getResourcesList()
     })
 }
 
+
+// const manifest = JSON.parse(fs.readdirSync(src_dir + "/manifest.json"));
+
 const plugins = [
     new webpack.DefinePlugin({}),
     new VueLoaderPlugin(),
@@ -53,6 +120,10 @@ const plugins = [
             {
                 from: 'src/assets/image/logo_*.png',
                 to: 'static/images/[name][ext]',
+                // filter: (filepath) => {
+                //     console.log(filepath)
+                //     return true
+                // }
             },
             {
                 from: "manifest.json",
@@ -61,19 +132,12 @@ const plugins = [
                     transformer(content) {
                         let manifest = JSON.parse(content.toString());
                         manifest.version = packageJson.version
-                        if (process.env.NODE_ENV === 'development') {
-                            // manifest.content_security_policy = "script-src 'self' 'unsafe-eval'; object-src 'self';"
-                        }
 
                         manifest.web_accessible_resources[0].resources = getResourcesList()
                         return Buffer.from(JSON.stringify(manifest, null, 2));
                     },
                 },
             },
-            // {
-            //     from: "src/off_screen_read_local_storage.html",
-            //     to: dist_dir + "/off_screen_read_local_storage.html",
-            // }
         ]
     }),
     new HtmlPlugin({
@@ -122,6 +186,19 @@ if (process.env.npm_config_report) {
     plugins.push(new BundleAnalyzerPlugin())
 }
 
+if (process.env.NODE_ENV !== 'production') {
+    plugins.push(
+        new MyReplaceImagePlugin({
+            replacements: [
+                {
+                    from: 'static/images',
+                    to: path.join(src_dir, 'assets-dev/image')
+                },
+            ],
+        })
+    )
+}
+
 module.exports = {
     mode: process.env.NODE_ENV || 'production',
     devtool: process.env.NODE_ENV === 'production' ? false : 'inline-source-map',
@@ -162,7 +239,7 @@ module.exports = {
                 use: ['style-loader', 'css-loader'],
             },
             {
-                test: /\.(png|jpg|gif)$/i,
+                test: /\.(png|jpe?g)$/i,
                 type: 'asset/resource',
                 generator: {
                     filename: 'static/images/[name][ext][query]'
@@ -177,7 +254,7 @@ module.exports = {
             },
         ],
     },
-    plugins: plugins,
+    plugins,
     experiments: {
     },
 };

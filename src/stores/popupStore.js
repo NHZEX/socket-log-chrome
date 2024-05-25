@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import {
     getAddressData,
     getClientId,
@@ -28,6 +28,8 @@ export const usePopupStore = defineStore('popup', () => {
     const e2eConfig = ref({
         key: '',
     })
+    const save_e2eKey = ref('')
+    const e2eKeyIsChange = computed(() => e2eConfig.value.key !== save_e2eKey.value)
 
     const loadStorageData = async () => {
         clientId.value = await getClientId()
@@ -37,6 +39,7 @@ export const usePopupStore = defineStore('popup', () => {
         await syncStatusMessage()
 
         e2eConfig.value = await getE2EConfig()
+        save_e2eKey.value = e2eConfig.value.key
 
         console.log('加载存储数据完成', {
             address: address.value,
@@ -66,6 +69,7 @@ export const usePopupStore = defineStore('popup', () => {
 
     const saveE2EConfigData = async () => {
         await saveE2EConfig(e2eConfig.value)
+        save_e2eKey.value = e2eConfig.value.key
     }
 
     return {
@@ -76,6 +80,7 @@ export const usePopupStore = defineStore('popup', () => {
         stateMsg,
         e2eStateMessage,
         e2eConfig,
+        e2eKeyIsChange,
         loadStorageData,
         syncStatusMessage,
         readStorageAddress,

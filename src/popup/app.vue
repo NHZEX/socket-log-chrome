@@ -40,8 +40,15 @@
             autocomplete="off"
             style="margin-right: 8px"
         >
-        <button type="button" @click="onSave_e2eKey">保存密钥</button>
-        <button type="button" @click="onGenerate_e2eKey" style="float: right">生成</button>
+        <div style="display: inline-block">
+          <button type="button" @click="onSave_e2eKey" :disabled="!e2eKeyIsChange">保存密钥</button>
+          <button
+              type="button"
+              @click="onCopy_e2eKey"
+              :disabled="!e2eConfig.key"
+          >{{ onCopy_e2eKey_hit.timer ? onCopy_e2eKey_hit.content : '拷贝' }}</button>
+          <button type="button" @click="onGenerate_e2eKey" style="float: right">生成</button>
+        </div>
       </div>
     </div>
     <div style="width: 100%">
@@ -94,6 +101,7 @@ const allowHosts = ref([])
 const enabledRuleCount = ref(0)
 
 const e2eConfig = popupStoreRefs.e2eConfig
+const e2eKeyIsChange = popupStoreRefs.e2eKeyIsChange
 
 const address = popupStoreRefs.address
 const clientId = popupStoreRefs.clientId
@@ -133,6 +141,28 @@ const onGenerate_e2eKey = async () => {
 
 const onSave_e2eKey = async () => {
   await popupStore.saveE2EConfigData()
+}
+
+const onCopy_e2eKey_hit = ref({
+  content: 'OK!',
+  timer: null,
+})
+const onCopy_e2eKey = async () => {
+  if (!await chrome.permissions.contains({
+    permissions: ['clipboardWrite']
+  })) {
+    await chrome.permissions.request({
+      permissions: ['clipboardWrite'],
+      origins: []
+    });
+  }
+  await navigator.clipboard.writeText(e2eConfig.value.key)
+  if (onCopy_e2eKey_hit.value.timer) {
+    clearTimeout(onCopy_e2eKey_hit.value.timer)
+  }
+  onCopy_e2eKey_hit.value.timer = setTimeout(() => {
+    onCopy_e2eKey_hit.value.timer = null
+  }, 1000)
 }
 
 const onSaveAllowHosts = async () => {

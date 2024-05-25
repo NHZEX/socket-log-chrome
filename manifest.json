@@ -47,6 +47,9 @@
     "https://*/*",
     "http://*/*"
   ],
+  "optional_permissions": [
+    "clipboardWrite"
+  ],
   "optional_host_permissions":[
   ],
   "web_accessible_resources": [

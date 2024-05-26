@@ -133,7 +133,7 @@ const plugins = [
                         let manifest = JSON.parse(content.toString());
                         manifest.version = packageJson.version
 
-                        manifest.web_accessible_resources[0].resources = getResourcesList()
+                        // manifest.web_accessible_resources[0].resources = getResourcesList()
                         return Buffer.from(JSON.stringify(manifest, null, 2));
                     },
                 },

@@ -55,7 +55,9 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["_auto_fill_"],
+      "resources": [
+        "static/images/*.png"
+      ],
       "matches": ["<all_urls>"]
     }
   ]

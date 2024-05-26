@@ -41,7 +41,8 @@
     "declarativeNetRequest",
     "storage",
     "notifications",
-    "offscreen"
+    "offscreen",
+    "alarms"
   ],
   "host_permissions": [
     "https://*/*",

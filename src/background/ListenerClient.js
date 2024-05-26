@@ -24,6 +24,9 @@ export class Client {
         path: '/',
     };
 
+    /**
+     * @type { WebSocket | null }
+     */
     ws = null
     #reconnectionTimer = 0
     #heartbeatTimer = 0
@@ -35,6 +38,15 @@ export class Client {
 
     constructor () {
         this.#messageProcessor = new MessageProcessor()
+    }
+
+    isActive () {
+        return !(
+            (this.ws ?? null) === null
+            || this.ws?.readyState === WebSocket.CLOSED
+            || this.ws?.readyState === WebSocket.CLOSING
+        );
+
     }
 
     async init (options = {}) {

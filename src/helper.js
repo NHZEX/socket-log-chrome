@@ -117,3 +117,6 @@ export function createRandomString(length) {
     return result;
 }
 
+export function getChromeMajorVersion () {
+    return parseInt(/Chrome\/([0-9]+)\./.exec(navigator.userAgent)[1]);
+}

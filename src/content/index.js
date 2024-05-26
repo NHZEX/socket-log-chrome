@@ -1,3 +1,5 @@
+import { getExtensionsVersion } from "../helper";
+
 /**
  * github: https://github.com/luofei614/SocketLog
  * @author luofei614<weibo.com/luofei614>
@@ -40,4 +42,4 @@ const _t = setInterval(() => {
     }
 }, 2000)
 
-console.log('已经注入日志接收器')
+console.log(`[socket-log] 已经注入日志接收器, v${getExtensionsVersion()}`)

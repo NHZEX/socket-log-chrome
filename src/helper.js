@@ -117,6 +117,11 @@ export function createRandomString(length) {
     return result;
 }
 
+export function getExtensionsVersion () {
+    const manifest = chrome.runtime.getManifest();
+    return manifest.version
+}
+
 export function getChromeMajorVersion () {
     return parseInt(/Chrome\/([0-9]+)\./.exec(navigator.userAgent)[1]);
 }

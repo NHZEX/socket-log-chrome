@@ -1,5 +1,5 @@
 import { get, has, isEqual } from "lodash-es";
-import { IMG_LOGO } from "./helper";
+import { getExtensionsVersion, IMG_LOGO } from "./helper";
 
 export async function getAddressData() {
     const data = await chrome.storage.local.get(['address'])
@@ -182,10 +182,9 @@ export async function migrateSetting()
                         await chrome.offscreen.closeDocument()
                     }, 3000)
                 }
-                const manifest = chrome.runtime.getManifest();
                 chrome.notifications.create(null, {
                     type: "basic",
-                    title: `重大版本更新通知 (${manifest.version})`,
+                    title: `重大版本更新通知 (${getExtensionsVersion()})`,
                     message: '老版本配置已经成功迁移，请检查插件是否工作正常！',
                     iconUrl: IMG_LOGO
                 });

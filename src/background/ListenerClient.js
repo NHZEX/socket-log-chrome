@@ -2,7 +2,8 @@ import {
     isEnableListen,
     getAddressData,
     getClientId,
-    isEnableClientHeartbeat, getE2EConfig,
+    isEnableClientHeartbeat,
+    getE2EConfig,
 } from "../storage";
 import {
     disable_icon,
@@ -13,10 +14,14 @@ import {
     badge_normal_destroy,
     set_running_state,
     notifications,
+    getChromeMajorVersion,
 } from "../helper";
 import { MessageProcessor } from "./MessageProcessor";
 
+export const LinkHoldAlarmName = 'listener-link-hold'
+
 export class Client {
+
     address = {
         tls: false,
         host: 'localhost',
@@ -40,6 +45,10 @@ export class Client {
         this.#messageProcessor = new MessageProcessor()
     }
 
+    static LinkHoldAlarmName () {
+        return LinkHoldAlarmName
+    }
+
     isActive () {
         return !(
             (this.ws ?? null) === null
@@ -47,6 +56,34 @@ export class Client {
             || this.ws?.readyState === WebSocket.CLOSING
         );
 
+    }
+
+    async installLinkHoldAlarm()
+    {
+        const alarmDelayInMinutes = getChromeMajorVersion() >= 120 ? 0.5 : 1.0
+        await chrome.alarms.clearAll()
+        await chrome.alarms.create(LinkHoldAlarmName, {
+            delayInMinutes: alarmDelayInMinutes,
+            periodInMinutes: alarmDelayInMinutes
+        });
+        console.debug('install-link-hold-alarm')
+    }
+
+    async uninstallLinkHoldAlarm()
+    {
+        await chrome.alarms.clear(LinkHoldAlarmName)
+        console.debug('uninstall-link-hold-alarm')
+    }
+
+    async alarmTriggerHandle(alarm)
+    {
+        if (alarm.name === LinkHoldAlarmName) {
+            if (!this.isActive()) {
+                console.debug('监听非活跃状态，尝试激活')
+                this.#onClone('服务已经关闭', false)
+                await this.init()
+            }
+        }
     }
 
     async init (options = {}) {
@@ -57,6 +94,7 @@ export class Client {
             }
             this.ws = null
             disable_icon();
+            await this.uninstallLinkHoldAlarm()
             return false;
         }
 
@@ -113,6 +151,7 @@ export class Client {
             await this.#onMessage(e)
         };
 
+        await this.installLinkHoldAlarm()
         this.ws = socket;
     }
 
@@ -203,13 +242,17 @@ export class Client {
         }
     }
 
-    #onClone (stateMessage) {
-        clearTimeout(this.#reconnectionTimer);
-        this.#reconnectionTimer = setTimeout(() => {
-            this.init({
-                isAutoReconnection: true,
-            })
-        }, 2000);
+    #onClone (stateMessage, reconnection = true) {
+        if (this.#reconnectionTimer) {
+            clearTimeout(this.#reconnectionTimer);
+        }
+        if (reconnection) {
+            this.#reconnectionTimer = setTimeout(() => {
+                this.init({
+                    isAutoReconnection: true,
+                })
+            }, 2000);
+        }
         set_running_state(stateMessage);
         disable_icon();
     }

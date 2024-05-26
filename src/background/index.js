@@ -6,7 +6,6 @@ import {
     listenerE2EConfigChanged,
 } from "../storage";
 import { Client } from "./ListenerClient";
-import { getChromeMajorVersion } from "../helper";
 
 self.addEventListener('install', event => {
     console.log('[ServiceWorker] 工作进程被安装', event)
@@ -32,20 +31,12 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
     if (reason === 'install' || reason === 'update' || reason === 'chrome_update') {
         await installRequestHandleRules()
 
-        await installAlarms()
+        console.debug('active-alarms', (await chrome.alarms.getAll()).map(v => `${v.name}: ${v.periodInMinutes} minutes`))
+    }
+    if (reason === 'install' || reason === 'update') {
+        await chrome.alarms.clearAll()
     }
 });
-
-async function installAlarms()
-{
-    const alarmDelayInMinutes = getChromeMajorVersion() >= 120 ? 0.5 : 1.0
-    await chrome.alarms.clearAll()
-    await chrome.alarms.create('listener-link-hold', {
-        delayInMinutes: alarmDelayInMinutes,
-        periodInMinutes: alarmDelayInMinutes
-    });
-    console.debug('install-alarms', (await chrome.alarms.getAll()).map(v => `${v.name}: ${v.periodInMinutes} minutes`))
-}
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     console.log('onMessage sender', sender)
@@ -93,15 +84,11 @@ listenerE2EConfigChanged(async () => {
 })
 
 ;(async () => {
-    // await wsc.init()
+    // auto start
+    await wsc.init()
 })();
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
     console.debug('alarm trigger', alarm.name, alarm)
-    if (alarm.name === 'listener-link-hold') {
-        if (!wsc.isActive()) {
-            console.debug('监听非活跃状态，尝试激活')
-            await wsc.init()
-        }
-    }
+    await wsc?.alarmTriggerHandle(alarm)
 });

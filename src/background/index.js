@@ -83,12 +83,12 @@ listenerE2EConfigChanged(async () => {
     await wsc.e2eReload()
 })
 
-;(async () => {
-    // auto start
-    await wsc.init()
-})();
-
 chrome.alarms.onAlarm.addListener(async (alarm) => {
     console.debug('alarm trigger', alarm.name, alarm)
     await wsc?.alarmTriggerHandle(alarm)
 });
+
+;(async () => {
+    // auto start
+    await wsc.init()
+})();

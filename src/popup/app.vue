@@ -206,8 +206,8 @@ onUnmounted(() => {
   chrome.storage.session.onChanged.removeListener(onMessage)
 
   if (_tidRefreshEnableRuleCount) {
-    _tidRefreshEnableRuleCount = null
     clearInterval(_tidRefreshEnableRuleCount)
+    _tidRefreshEnableRuleCount = null
   }
 })
 

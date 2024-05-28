@@ -133,6 +133,10 @@ const plugins = [
                         let manifest = JSON.parse(content.toString());
                         manifest.version = packageJson.version
 
+                        if (process.env.NODE_ENV === 'development') {
+                            manifest.name = `${manifest.name} [Dev]`
+                        }
+
                         // manifest.web_accessible_resources[0].resources = getResourcesList()
                         return Buffer.from(JSON.stringify(manifest, null, 2));
                     },
@@ -203,6 +207,7 @@ module.exports = {
     mode: process.env.NODE_ENV || 'production',
     devtool: process.env.NODE_ENV === 'production' ? false : 'inline-source-map',
     target: 'web',
+    node: false,
     entry: {
         background: './src/background/index.js',
         content: './src/content/index.js',

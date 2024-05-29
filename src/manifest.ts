@@ -1,5 +1,4 @@
 import pkg from "../package.json";
-import * as process from "node:process";
 
 const manifest = {
   action: {
@@ -33,16 +32,8 @@ const manifest = {
   },
 };
 
-export function getManifest({ mode }): chrome.runtime.ManifestV3 {
+export function getManifest({ mode }: { mode: string }): chrome.runtime.ManifestV3 {
   const name = pkg.displayName ?? pkg.name
-  // if (mode === 'development') {
-  //   for (const [key] of Object.entries(manifest.icons)) {
-  //     manifest.icons[key] = 'dev/' + manifest.icons[key]
-  //   }
-  //   for (const [key] of Object.entries(manifest.action.default_icon)) {
-  //     manifest.action.default_icon[key] = 'dev/' + manifest.action.default_icon[key]
-  //   }
-  // }
   return {
     description: pkg.description,
     name: mode === 'production' ? name : `${name} [Dev]`,

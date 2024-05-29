@@ -4,7 +4,7 @@ import {
     getClientId,
     isEnableClientHeartbeat,
     getE2EConfig,
-} from "../storage";
+} from "~/utils/storage";
 import {
     disable_icon,
     enable_icon,
@@ -15,7 +15,7 @@ import {
     set_running_state,
     notifications,
     getChromeMajorVersion,
-} from "../helper";
+} from "~/utils/helper";
 import { MessageProcessor } from "./MessageProcessor";
 
 export const LinkHoldAlarmName = 'listener-link-hold'
@@ -29,17 +29,11 @@ export class Client {
         path: '/',
     };
 
-    /**
-     * @type { WebSocket | null }
-     */
-    ws = null
-    #reconnectionTimer = 0
-    #heartbeatTimer = 0
+    ws: WebSocket | null = null
+    #reconnectionTimer: number = 0
+    #heartbeatTimer: number = 0
 
-    /**
-     * @var { MessageProcessor }
-     */
-    #messageProcessor
+    #messageProcessor: MessageProcessor
 
     constructor () {
         this.#messageProcessor = new MessageProcessor()
@@ -75,7 +69,7 @@ export class Client {
         console.debug('uninstall-link-hold-alarm')
     }
 
-    async alarmTriggerHandle(alarm)
+    async alarmTriggerHandle(alarm: chrome.alarms.Alarm)
     {
         if (alarm.name === LinkHoldAlarmName) {
             if (!this.isActive()) {
@@ -86,11 +80,17 @@ export class Client {
         }
     }
 
-    async init (options = {}) {
+    async init (options: {
+        isAutoReconnection?: boolean
+    } = {}) {
         if (await isEnableListen() === false) {
             console.info('当前监听状态：禁用')
-            if (this.ws && (WebSocket.CLOSED !== this.ws.readyState || WebSocket.CLOSING !== this.ws.readyState)) {
-                this.ws.close();
+            if (this.ws) {
+                try {
+                    this.ws.close();
+                } catch (e) {
+                    console.warn('ws close', e)
+                }
             }
             this.ws = null
             disable_icon();
@@ -123,7 +123,7 @@ export class Client {
         }
 
         await set_running_state('服务连接中');
-        if ((options?.isAutoReconnection ?? false) === false) {
+        if (!(options?.isAutoReconnection ?? false)) {
             await this.e2eReload()
         }
         const socket = new WebSocket(address);
@@ -179,10 +179,10 @@ export class Client {
 
     #sendPing () {
         const binaryData = new Uint8Array([0x05, 0x22, 0x09]);
-        this.ws.send(binaryData.buffer);
+        this.ws!.send(binaryData.buffer);
     }
 
-    async #onMessage (event) {
+    async #onMessage (event: MessageEvent) {
         if (event.data instanceof Blob) {
             // 暂未使用的二进制数据
             return
@@ -234,15 +234,15 @@ export class Client {
             console.log(tabs)
             if (tabs.length > 0) {
                 console.log('即将推送 tabs: ', tabs)
-                let tab = tabs[0];
-                await chrome.tabs.sendMessage(tab.id, result.logs);
+                let tab: chrome.tabs.Tab = tabs[0];
+                await chrome.tabs.sendMessage(tab.id as number, result.logs);
             }
         } finally {
             badge_normal_destroy();
         }
     }
 
-    #onClone (stateMessage, reconnection = true) {
+    #onClone (stateMessage: string, reconnection = true) {
         if (this.#reconnectionTimer) {
             clearTimeout(this.#reconnectionTimer);
         }

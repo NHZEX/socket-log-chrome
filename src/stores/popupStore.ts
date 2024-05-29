@@ -7,8 +7,9 @@ import {
     saveE2EConfig,
     getRunningState,
     isEnableClientHeartbeat,
-    isEnableListen, getE2EState,
-} from "../storage";
+    isEnableListen,
+    getE2EState,
+} from "~/utils/storage";
 import { get } from "lodash-es";
 
 export const usePopupStore = defineStore('popup', () => {

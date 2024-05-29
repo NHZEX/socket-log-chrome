@@ -1,7 +1,7 @@
-import _imgLogoX32 from 'src/assets/image/logo_32.png'
-import _imgLogoDisabledX32 from 'src/assets/image/logo_disabled_32.png'
-import _imgLogoX128 from 'src/assets/image/logo_128.png'
+import _imgLogoDisabledX32 from '~/assets/icons/off_32.png'
 
+const _imgLogoX32 = 'icons/32.png'
+const _imgLogoX128 = 'icons/128.png'
 const IMG_LOGO_X16 = chrome.runtime.getURL(_imgLogoX32);
 const IMG_LOGO_DISABLED_X16 = chrome.runtime.getURL(_imgLogoDisabledX32);
 export const IMG_LOGO = chrome.runtime.getURL(_imgLogoX128);
@@ -70,13 +70,13 @@ export function badge_error_destroy() {
     ])
 }
 
-export async function set_running_state(message) {
+export async function set_running_state(message: string) {
     await chrome.storage.session.set({
         status_message: message
     });
 }
 
-export async function set_e2e_state(message) {
+export async function set_e2e_state(message: string) {
     await chrome.storage.session.set({
         e2e_status: message
     });
@@ -93,8 +93,8 @@ export async function restartConnection() {
     )
 }
 
-export function notifications (title, message, timeout = 5000) {
-    chrome.notifications.create(null,  {
+export function notifications (title: string, message: string, timeout = 5000) {
+    chrome.notifications.create({
         type: "basic",
         title: title,
         message: message,
@@ -106,7 +106,7 @@ export function notifications (title, message, timeout = 5000) {
     });
 }
 
-export function createRandomString(length) {
+export function createRandomString(length: number) {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let result = "";
     const randomArray = new Uint8Array(length);
@@ -123,5 +123,9 @@ export function getExtensionsVersion () {
 }
 
 export function getChromeMajorVersion () {
-    return parseInt(/Chrome\/([0-9]+)\./.exec(navigator.userAgent)[1]);
+    const result = /Chrome\/([0-9]+)\./.exec(navigator.userAgent)
+    if (!result) {
+        return 0
+    }
+    return parseInt(result[1] ?? '0');
 }

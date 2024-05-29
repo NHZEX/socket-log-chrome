@@ -34,7 +34,9 @@ export async function getE2EConfig() {
     }
 }
 
-export async function saveE2EConfig(config) {
+export async function saveE2EConfig(config: {
+    key: string,
+}) {
     await chrome.storage.local.set({
         e2eConfig: config,
     })
@@ -46,7 +48,7 @@ export async function getAllowHostRules() {
     return data?.allowRules ?? []
 }
 
-export async function setAllowHosts(allowHosts) {
+export async function setAllowHosts(allowHosts: string[]) {
 
     const hosts = [];
     for (const host of allowHosts) {
@@ -64,7 +66,7 @@ export async function setAllowHosts(allowHosts) {
     return hosts
 }
 
-export function listenerAllowHostRulesChanged(cb) {
+export function listenerAllowHostRulesChanged(cb: Function) {
     chrome.storage.sync.onChanged.addListener(async ({ currentRuleFlag }) => {
         if (currentRuleFlag === undefined) {
             return
@@ -77,7 +79,7 @@ export function listenerAllowHostRulesChanged(cb) {
     })
 }
 
-export function listenerE2EConfigChanged(cb) {
+export function listenerE2EConfigChanged(cb: Function) {
     chrome.storage.local.onChanged.addListener(async ({ e2eConfig }) => {
         if (e2eConfig === undefined) {
             return
@@ -101,13 +103,13 @@ export async function getE2EState() {
 }
 
 
-let creating; // A global promise to avoid concurrency issues
-async function setupOffscreenDocument(path, reasons, justification) {
+let creating: Promise<any>|null; // A global promise to avoid concurrency issues
+async function setupOffscreenDocument(path: string, reasons: string[], justification: string) {
     // Check all windows controlled by the service worker to see if one
     // of them is the offscreen document with the given path
     const offscreenUrl = chrome.runtime.getURL(path);
     const existingContexts = await chrome.runtime.getContexts({
-        contextTypes: ['OFFSCREEN_DOCUMENT'],
+        contextTypes: [chrome.runtime.ContextType.OFFSCREEN_DOCUMENT],
         documentUrls: [offscreenUrl]
     });
 
@@ -121,7 +123,9 @@ async function setupOffscreenDocument(path, reasons, justification) {
     } else {
         creating = chrome.offscreen.createDocument({
             url: path,
-            reasons: ['CLIPBOARD'],
+            reasons: [
+                chrome.offscreen.Reason.CLIPBOARD,
+            ],
             justification: 'reason for needing the document',
         });
         await creating;
@@ -131,22 +135,29 @@ async function setupOffscreenDocument(path, reasons, justification) {
 
 export async function migrateSetting()
 {
-    console.log('执行配置迁移')
+    console.info('执行配置迁移')
 
     const address = await getAddressData()
     console.log(address, address === null)
     if (address === null) {
-        console.log('当前配置为空，尝试迁移设置')
+        console.debug('当前配置为空，尝试迁移设置')
 
-        const readCallback = async (message) => {
+        const readCallback = async (message: {
+            event: string,
+            data: object
+        }) => {
             if (message.event === 'old_setting_sync') {
                 try {
-                    console.log('old_setting_sync', message)
-                    const newSetting = {}
+                    console.info('old_setting_sync', message)
+                    const newSetting: {
+                        address: object
+                        clientId: string
+                        enableListen: boolean
+                    } = {} as any
                     const address = get(message, 'data.address')
                     if (address) {
-                        console.log('读取到老配置，开始迁移')
-                        console.log(address)
+                        console.debug('读取到老配置，开始迁移')
+                        console.debug(address)
                         try {
                             const _address = JSON.parse(address)
                             if (!(
@@ -154,7 +165,7 @@ export async function migrateSetting()
                                 && has(_address, 'host')
                                 && has(_address, 'port')
                             )) {
-                                console.log('old_setting_sync failed', _address)
+                                console.warn('old_setting_sync failed', _address)
                                 return
                             }
                             newSetting.address = {
@@ -162,7 +173,7 @@ export async function migrateSetting()
                                 ..._address,
                             }
                         } catch (e) {
-                            console.log('old_setting_sync failed', e)
+                            console.warn('old_setting_sync failed', e)
                             return
                         }
                     }
@@ -174,7 +185,7 @@ export async function migrateSetting()
                     if (enable) {
                         newSetting.enableListen = enable === 'true'
                     }
-                    console.log('迁移的新设置', newSetting)
+                    console.info('迁移的新设置', newSetting)
                     await chrome.storage.local.set(newSetting)
                 } finally {
                     setTimeout(async () => {
@@ -182,7 +193,7 @@ export async function migrateSetting()
                         await chrome.offscreen.closeDocument()
                     }, 3000)
                 }
-                chrome.notifications.create(null, {
+                chrome.notifications.create({
                     type: "basic",
                     title: `重大版本更新通知 (${getExtensionsVersion()})`,
                     message: '老版本配置已经成功迁移，请检查插件是否工作正常！',
@@ -192,7 +203,7 @@ export async function migrateSetting()
         }
         chrome.runtime.onMessage.addListener(readCallback)
         await setupOffscreenDocument(
-            'off_screen_read_local_storage.html',
+            'src/entries/off_screen/off_screen_read_local_storage.html',
             ['LOCAL_STORAGE'],
             'migrate old setting',
         )

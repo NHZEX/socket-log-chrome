@@ -1,5 +1,6 @@
-import { getAllowHostRules, getClientId, isEnableListen } from "../storage";
-import { IMG_LOGO } from "../helper";
+import { getAllowHostRules, getClientId, isEnableListen } from "~/utils/storage";
+import { IMG_LOGO } from "~/utils/helper";
+// import browser from "webextension-polyfill";
 
 export async function installRequestHandleRules () {
     const clientId = await getClientId()
@@ -22,12 +23,11 @@ export async function installRequestHandleRules () {
     const userAgent = `${navigator.userAgent} SocketLog(tabid=999999&client_id=${clientId})`
 
     const filters = await getAllowHostRules()
-    /**
-     * @type Rule[]
-     */
-    const newRules = [];
+
+    const newRules: chrome.declarativeNetRequest.Rule[] = [];
 
     if (filters.length > 0) {
+
         console.log(`InstallRequestHandleRules: filter count = ${filters.length}`)
         let i = 0
         for (const filter of filters) {
@@ -35,9 +35,13 @@ export async function installRequestHandleRules () {
                 "id": ++i,
                 "priority": 1,
                 "action": {
-                    "type": "modifyHeaders",
+                    "type": chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
                     "requestHeaders": [
-                        { "header": "User-Agent", "operation": "set" , 'value': userAgent }
+                        {
+                            "header": "User-Agent",
+                            "operation": chrome.declarativeNetRequest.HeaderOperation.SET,
+                            'value': userAgent,
+                        }
                     ]
                 },
                 "condition": {
@@ -53,9 +57,13 @@ export async function installRequestHandleRules () {
             "id": 1,
             "priority": 1,
             "action": {
-                "type": "modifyHeaders",
+                "type": chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
                 "requestHeaders": [
-                    { "header": "User-Agent", "operation": "set" , 'value': userAgent }
+                    {
+                        "header": "User-Agent",
+                        "operation": chrome.declarativeNetRequest.HeaderOperation.SET,
+                        'value': userAgent,
+                    }
                 ]
             },
             "condition": {
@@ -74,11 +82,12 @@ export async function installRequestHandleRules () {
             addRules: newRules
         })
     } catch (e) {
-        console.error(e)
-        chrome.notifications.create(null, {
+        const error = e as Error
+        console.error(error)
+        chrome.notifications.create({
             type: "basic",
             title: "更新域名监听名单失败",
-            message: `请检查输入是否有效：\n${e.message}`,
+            message: `请检查输入是否有效：\n${error?.message || ''}`,
             iconUrl: IMG_LOGO
         }, function (id) {
             setTimeout(function () {

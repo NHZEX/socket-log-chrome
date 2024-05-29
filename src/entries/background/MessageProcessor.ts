@@ -1,37 +1,33 @@
 import {
     notifications,
     set_e2e_state
-} from "../helper";
+} from "~/utils/helper";
 
 export
 class MessageProcessor {
 
-    clientId = null
-    /**
-     * @type {null | self.crypto.subtle.CryptoKey}
-     */
-    aseKey = null
-    /**
-     * @type {ArrayBuffer}
-     */
-    aseAdd = null
-    enableE2E = false
-    e2eErrorCount = 0
+    clientId: string | null = null
+
+    aseKey: CryptoKey | null = null
+
+    aseAdd?: ArrayBuffer
+    enableE2E: boolean = false
+    e2eErrorCount: number = 0
 
     constructor () {
     }
 
-    async loadE2EConfig (clientId, config)
+    async loadE2EConfig (clientId: string, config: { key: string })
     {
         this.clientId = clientId
-        const addContent = new TextEncoder().encode(`SL-E2E_${this.clientId}`, 'utf-8')
+        const addContent = new TextEncoder().encode(`SL-E2E_${this.clientId}`)
         this.aseAdd = await self.crypto.subtle.digest(
             'SHA-256',
             addContent.buffer
         )
 
         if (config?.key && config.key.length >= 8) {
-            const keyBinary = new TextEncoder().encode(config.key, 'utf-8')
+            const keyBinary = new TextEncoder().encode(config.key)
             const keyHash = await self.crypto.subtle.digest(
                 'SHA-256',
                 keyBinary.buffer
@@ -51,7 +47,7 @@ class MessageProcessor {
         } else {
             this.aseKey = null
             this.enableE2E = false
-            await set_e2e_state(null)
+            await set_e2e_state('')
         }
         this.e2eErrorCount = 0
     }
@@ -64,11 +60,7 @@ class MessageProcessor {
         await set_e2e_state('端到端已禁用')
     }
 
-    /**
-     * @param {ArrayBuffer} binary
-     * @return {Promise<string | boolean>}
-     */
-    async parseBinaryMessage (binary)
+    async parseBinaryMessage (binary: ArrayBuffer): Promise<string | false>
     {
         if (binary.byteLength < 2) {
             // 不可处理二进制
@@ -144,7 +136,7 @@ class MessageProcessor {
         try {
             return new TextDecoder("utf-8", {
                 fatal: true,
-            }).decode(plaintext)
+            }).decode(plaintext ?? undefined)
         } catch (e) {
             console.warn('decodeMessage fail')
             console.dir(e)
@@ -156,11 +148,7 @@ class MessageProcessor {
         }
     }
 
-    /**
-     * @param {ArrayBuffer} binary
-     * @return {Promise<ArrayBuffer>}
-     */
-    async decryptMessage (binary) {
+    async decryptMessage (binary: ArrayBuffer): Promise<ArrayBuffer | null> {
         if (this.aseKey === null) {
             return null
         }
@@ -172,7 +160,7 @@ class MessageProcessor {
             {
                 name: "AES-GCM",
                 iv,
-                additionalData: this.aseAdd,
+                additionalData: this!.aseAdd,
                 tagLength: 128,
             },
             this.aseKey,

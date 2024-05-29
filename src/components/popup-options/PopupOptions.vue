@@ -4,7 +4,7 @@
       SocketLog 设置 （状态：<span>{{ stateMessage }}{{ e2eStateMessage ? `; ${e2eStateMessage}` : '' }}</span>）
       <div class="help">
         <a href="https://github.com/NHZEX/socket-log-chrome" title="帮助" target="_blank">
-          <img src="@/assets/image/help_16.png" alt="help"/>
+          <img :src="helpLogoUrl" alt="help"/>
         </a>
       </div>
     </div>
@@ -71,8 +71,8 @@
 "
         ></textarea>
         <div class="help">
-          <a href="/rule_help.html" title="帮助" target="_blank">
-            <img src="@/assets/image/help_16.png" alt="help"/>
+          <a :href="ruleHelpHtmlUrl" title="帮助" target="_blank">
+            <img :src="helpLogoUrl" alt="help"/>
           </a>
         </div>
         <div style="max-width: 100px">
@@ -84,20 +84,24 @@
   </div>
 </template>
 
-<script setup>
-
+<script setup lang="ts">
 import { reactive, computed, onMounted, onUnmounted, ref, watch, toRef } from 'vue'
-import { usePopupStore } from 'src/stores/popupStore'
-import { createRandomString, restartConnection } from 'src/helper'
-import { getAllowHostRules, setAllowHosts } from "../storage";
+import { usePopupStore } from '~/stores/popupStore'
+import { createRandomString, restartConnection } from '~/utils/helper'
+import { getAllowHostRules, setAllowHosts } from "~/utils/storage";
 import { storeToRefs } from "pinia";
+import HelpLogo from "~/assets/image/help.png";
+import RuleHelpHtml from '~/entries/popup/rule_help.html?url'
+
+const helpLogoUrl = new URL(HelpLogo, import.meta.url).href;
+const ruleHelpHtmlUrl = new URL(RuleHelpHtml, import.meta.url).href;
 
 const popupStore = usePopupStore()
 const popupStoreRefs = storeToRefs(popupStore)
 
 popupStore.loadStorageData()
 
-const allowHosts = ref([])
+const allowHosts = ref<string[]>([])
 const enabledRuleCount = ref(0)
 
 const e2eConfig = popupStoreRefs.e2eConfig
@@ -115,7 +119,7 @@ const stateMessage = computed(() => popupStore.stateMsg)
 const e2eStateMessage = computed(() => popupStore.e2eStateMessage)
 
 // 域名配置
-const allowRulesEdit = computed({
+const allowRulesEdit = computed<string>({
   get: () => allowHosts.value
       .join('\n'),
   set: val => {
@@ -143,7 +147,10 @@ const onSave_e2eKey = async () => {
   await popupStore.saveE2EConfigData()
 }
 
-const onCopy_e2eKey_hit = ref({
+const onCopy_e2eKey_hit = ref<{
+  content: string,
+  timer: number|null,
+}>({
   content: 'OK!',
   timer: null,
 })
@@ -173,7 +180,19 @@ const onSaveAllowHosts = async () => {
   }
 }
 
-const onMessage = ({ status_message: statusMessage, e2e_status: e2eStateMessage }) => {
+const onMessage = (
+    {
+      status_message: statusMessage,
+      e2e_status: e2eStateMessage
+    }: {
+      status_message?: {
+        newValue: string, oldValue: string
+      },
+      e2e_status?: {
+        newValue: string, oldValue: string
+      }
+    }
+) => {
   if (statusMessage !== undefined) {
     const { newValue, oldValue } = statusMessage
     console.log('statusMessage.onChanged', newValue, oldValue)
@@ -193,7 +212,7 @@ const onMessage = ({ status_message: statusMessage, e2e_status: e2eStateMessage 
 const refreshEnableRuleCount = async () => {
   enabledRuleCount.value = (await chrome.declarativeNetRequest.getDynamicRules()).length;
 }
-let _tidRefreshEnableRuleCount = null
+let _tidRefreshEnableRuleCount: number | null = null
 
 onMounted(async () => {
   chrome.storage.session.onChanged.addListener(onMessage);
@@ -210,9 +229,8 @@ onUnmounted(() => {
     _tidRefreshEnableRuleCount = null
   }
 })
-
 </script>
 
 <style>
-#app {}
+@import "PopupOptions.css";
 </style>

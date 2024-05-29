@@ -1,10 +1,10 @@
-import { installRequestHandleRules } from './RequestHandle'
 import { isObject } from "lodash-es";
 import {
     migrateSetting,
     listenerAllowHostRulesChanged,
     listenerE2EConfigChanged,
-} from "../storage";
+} from "~/utils/storage";
+import { installRequestHandleRules } from './RequestHandle'
 import { Client } from "./ListenerClient";
 
 self.addEventListener('install', event => {
@@ -38,7 +38,7 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
     }
 });
 
-chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (message : { event: string }, sender, sendResponse) => {
     console.log('onMessage sender', sender)
     if (!isObject(message)) {
         return false;
@@ -91,4 +91,5 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 ;(async () => {
     // auto start
     await wsc.init()
+    await migrateSetting()
 })();

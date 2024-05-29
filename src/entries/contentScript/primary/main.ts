@@ -1,30 +1,24 @@
-import { getExtensionsVersion } from "../helper";
+import { getExtensionsVersion } from "~/utils/helper";
 
-/**
- * github: https://github.com/luofei614/SocketLog
- * @author luofei614<weibo.com/luofei614>
- * console print log
- */
-const onMessage = (message, sender, sendResponse) => {
+const onMessage = (message: PrintMessageLines, sender: any, sendResponse: Function) => {
     if ('object' !== typeof (message)) {
         console.warn('socketlog', 'invalid content', message);
         sendResponse('not object');
         return;
     }
     message.forEach(function (log) {
-        if (console[log.type]) {
+        if (Object.hasOwn(console, log.type)) {
             if (log.css) {
+                // @ts-expect-error
                 console[log.type]('%c' + log.msg, log.css);
             } else {
+                // @ts-expect-error
                 console[log.type](log.msg);
             }
-            return;
-        }
-
-        if ('alert' === log.type) {
+        } else if ('alert' === log.type as string) {
             alert(log.msg);
         } else {
-            alert('SocketLog type error, ' + log.type);
+            alert('SocketLog print type error, ' + log.type);
         }
     });
     sendResponse('done');

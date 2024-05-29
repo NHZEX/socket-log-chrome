@@ -40,13 +40,13 @@ export function replaceStaticFiles(options): Plugin {
                 process.cwd(),
                 viteConfig.root,
                 viteConfig.build.outDir,
-                'icons'
+                'icons',
             )
             const publicIconsDir = path.resolve(
                 process.cwd(),
                 viteConfig.root,
-                viteConfig.publicDir,
-                'dev/icons'
+                'public-dev',
+                'icons',
             );
 
             // console.log({

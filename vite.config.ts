@@ -2,8 +2,8 @@ import {defineConfig, type PluginOption} from "vite";
 import vue from "@vitejs/plugin-vue";
 import webExtension from "@samrum/vite-plugin-web-extension";
 import path from "path";
-import fs from 'fs';
 import {getManifest} from "./src/manifest";
+import removeConsole from "vite-plugin-remove-console";
 import {replaceStaticFiles} from "./dev/vite-replace-static-files";
 import zipPack from "vite-plugin-zip-pack";
 
@@ -28,6 +28,9 @@ export default defineConfig(({ mode }) => {
     )
   }
   if (mode === 'production') {
+    plugins.push(removeConsole({
+      includes: ["debug"],
+    }))
     plugins.push(zipPack({
       inDir: 'release',
       outDir: __dirname,

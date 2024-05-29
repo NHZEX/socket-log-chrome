@@ -58,6 +58,9 @@ devDependencies:
   vite:
     specifier: ^5.2.12
     version: 5.2.12
+  vite-plugin-remove-console:
+    specifier: ^2.2.0
+    version: 2.2.0
   vite-plugin-zip-pack:
     specifier: ^1.2.3
     version: 1.2.3(vite@5.2.12)
@@ -3779,6 +3782,10 @@ packages:
   /uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
     hasBin: true
+    dev: true
+
+  /vite-plugin-remove-console@2.2.0:
+    resolution: {integrity: sha512-qgjh5pz75MdE9Kzs8J0kBwaCfifHV0ezRbB9rpGsIOxam+ilcGV7WOk91vFJXquzRmiKrFh3Hxlh0JJWAmXTbQ==}
     dev: true
 
   /vite-plugin-zip-pack@1.2.3(vite@5.2.12):

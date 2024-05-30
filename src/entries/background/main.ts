@@ -1,9 +1,9 @@
 import { isObject } from "lodash-es";
 import {
-    migrateSetting,
     listenerAllowHostRulesChanged,
     listenerE2EConfigChanged,
 } from "~/utils/storage";
+import { migrateSetting } from "~/utils/migrate-setting";
 import { installRequestHandleRules } from './RequestHandle'
 import { Client } from "./ListenerClient";
 
@@ -88,7 +88,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     await wsc?.alarmTriggerHandle(alarm)
 });
 
-;(async () => {
+(async () => {
     // auto start
     await wsc.init()
     await migrateSetting()

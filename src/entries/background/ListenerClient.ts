@@ -197,19 +197,20 @@ export class Client {
             content = event.data
         }
 
-        let client_id = await getClientId();
+        const client_id = await getClientId();
 
-        let result = {
-            client_id: null,
-            force_client_id: null,
-            logs: null,
-            // tabid: null,
+        let result: {
+            client_id: string | null,
+            force_client_id: string | null,
+            logs: object[],
         };
         try {
-            let data = JSON.parse(content);
-            result.client_id = data['client_id'];
-            result.force_client_id = data['force_client_id'];
-            result.logs = data['logs'];
+            const data = JSON.parse(content);
+            result = {
+                client_id: data.client_id,
+                force_client_id: data.force_client_id,
+                logs: data.logs,
+            }
             // result.tabid = data['tabid'];
         } catch (e) {
             badge_error_bright();
@@ -231,14 +232,31 @@ export class Client {
                 lastFocusedWindow: true,
                 currentWindow: true,
             })
-            console.log(tabs)
             if (tabs.length > 0) {
-                console.log('即将推送 tabs: ', tabs)
-                let tab: chrome.tabs.Tab = tabs[0];
-                await chrome.tabs.sendMessage(tab.id as number, result.logs);
+                console.info('即将推送 tabs: ', tabs)
+                const tab: chrome.tabs.Tab = tabs[0];
+                await this.#sendLogMessage(tab, result.logs)
             }
         } finally {
             badge_normal_destroy();
+        }
+    }
+
+    async #sendLogMessage (tab: chrome.tabs.Tab, message: object[], isRetry: boolean = false)
+    {
+        try {
+            await chrome.tabs.sendMessage(tab.id as number, message);
+        } catch (e) {
+            console.warn('推送失败' + (isRetry ? '[retry]' : ''), {
+                e,
+                tab,
+                log: message,
+            })
+            if (!isRetry) {
+                setTimeout(async () => {
+                    await this.#sendLogMessage(tab, message, true)
+                }, 1000)
+            }
         }
     }
 

@@ -22,7 +22,11 @@ export default [
     ...pluginVue.configs["flat/essential"],
     {
         rules: {
-            'no-unused-vars': 'warn'
+            /* >>> */
+            /* 解决`enum`误报 https://github.com/typescript-eslint/typescript-eslint/issues/2619#issuecomment-701901752 */
+            "no-unused-vars": "off",
+            "@typescript-eslint/no-unused-vars": "error"
+            /* <<< */
         }
     }
 ];

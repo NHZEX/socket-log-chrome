@@ -6,11 +6,27 @@ import {getManifest} from "./src/manifest";
 import removeConsole from "vite-plugin-remove-console";
 import {replaceStaticFiles} from "./dev/vite-replace-static-files";
 import zipPack from "vite-plugin-zip-pack";
+// ElementPlus
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const plugins: PluginOption[] = [
     vue(),
+    AutoImport({
+      resolvers: [ElementPlusResolver()],
+      dts: './types/auto-imports.d.ts',
+      eslintrc: {
+        enabled: true,
+        filepath: './.eslintrc-auto-import.json'
+      },
+    }),
+    Components({
+      resolvers: [ElementPlusResolver()],
+      dts: './types/components.d.ts'
+    }),
     webExtension({
       manifest: getManifest({ mode }),
     }),

@@ -17,7 +17,11 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "lib": ["esnext", "dom"],
-    "types": ["chrome"]
+    "types": [
+      "chrome",
+      /** Element Plus 的 Volar 插件支持 */
+      "element-plus/global"
+    ]
   },
   "include": [
     "src/**/*.ts",
@@ -25,7 +29,7 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "tests/**/*.ts",
-    "types/**/*.d.ts"
+    "types/**/*.d.ts",
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -26,6 +26,8 @@ export async function installRequestHandleRules () {
 
     const newRules: chrome.declarativeNetRequest.Rule[] = [];
 
+    const allResourceTypes = Object.values(chrome.declarativeNetRequest.ResourceType)
+
     if (filters.length > 0) {
 
         console.log(`InstallRequestHandleRules: filter count = ${filters.length}`)
@@ -47,6 +49,7 @@ export async function installRequestHandleRules () {
                 "condition": {
                     "isUrlFilterCaseSensitive": false,
                     // "requestDomains": [],
+                    resourceTypes: allResourceTypes,
                     "urlFilter": filter
                 }
             })
@@ -68,6 +71,7 @@ export async function installRequestHandleRules () {
             },
             "condition": {
                 "isUrlFilterCaseSensitive": false,
+                resourceTypes: allResourceTypes,
                 "urlFilter": "*://*/*"
             }
         })

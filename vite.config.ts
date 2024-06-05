@@ -10,13 +10,26 @@ import zipPack from "vite-plugin-zip-pack";
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const plugins: PluginOption[] = [
     vue(),
     AutoImport({
-      resolvers: [ElementPlusResolver()],
+      resolvers: [
+        ElementPlusResolver(),
+      ],
+      imports: [
+        {
+          'naive-ui': [
+            'useDialog',
+            'useMessage',
+            'useNotification',
+            'useLoadingBar'
+          ]
+        }
+      ],
       dts: './types/auto-imports.d.ts',
       eslintrc: {
         enabled: true,
@@ -24,7 +37,10 @@ export default defineConfig(({ mode }) => {
       },
     }),
     Components({
-      resolvers: [ElementPlusResolver()],
+      resolvers: [
+        ElementPlusResolver(),
+        NaiveUiResolver(),
+      ],
       dts: './types/components.d.ts'
     }),
     webExtension({
@@ -59,6 +75,7 @@ export default defineConfig(({ mode }) => {
       alias: {
         "~": path.resolve(__dirname, "./src"),
         "~icon": path.resolve(__dirname, "./public/icons"),
+        "~types": path.resolve(__dirname, "./types"),
       },
     },
     build: {

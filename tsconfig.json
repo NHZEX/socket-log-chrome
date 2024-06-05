@@ -4,7 +4,8 @@
     "baseUrl": ".",
     "paths": {
       "~/*": ["src/*"],
-      "~icon/*": ["public/icons/*"]
+      "~icon/*": ["public/icons/*"],
+      "~types/*": ["types/*"],
     },
     "target": "esnext",
     "useDefineForClassFields": true,
@@ -14,13 +15,16 @@
     "jsx": "preserve",
     "sourceMap": true,
     "resolveJsonModule": true,
+    /** https://cn.vitejs.dev/guide/features.html#typescript-compiler-options */
+    "isolatedModules": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "lib": ["esnext", "dom"],
     "types": [
       "chrome",
-      /** Element Plus 的 Volar 插件支持 */
-      "element-plus/global"
+      /** Volar 支持 */
+      "element-plus/global",
+      "naive-ui/volar"
     ]
   },
   "include": [

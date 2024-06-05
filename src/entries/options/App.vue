@@ -1,18 +1,14 @@
 <template>
-  <main>
-    <h1>TODO</h1>
-  </main>
+  <n-message-provider>
+    <n-modal-provider>
+      <option-content></option-content>
+    </n-modal-provider>
+  </n-message-provider>
 </template>
 
 <script setup lang="ts">
+import OptionContent from "~/entries/options/OptionContent.vue";
 </script>
 
 <style>
-main {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
 </style>

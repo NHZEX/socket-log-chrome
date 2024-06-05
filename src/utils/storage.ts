@@ -1,4 +1,4 @@
-import { isEqual } from "lodash-es";
+import { isEqual } from "radash";
 
 export async function getAddressData() {
     const data = await chrome.storage.local.get(['address'])

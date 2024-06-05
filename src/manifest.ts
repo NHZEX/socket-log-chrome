@@ -1,6 +1,7 @@
 import pkg from "../package.json";
 
 const manifest = {
+  minimum_chrome_version: "116",
   action: {
     default_icon: {
       16: "icons/16.png",

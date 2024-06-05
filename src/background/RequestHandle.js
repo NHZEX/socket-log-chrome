@@ -21,6 +21,22 @@ export async function installRequestHandleRules () {
     // todo 兼容性解决方案 tabId 填充假值，接受端需要调整 tabId 处理逻辑
     const userAgent = `${navigator.userAgent} SocketLog(tabid=999999&client_id=${clientId})`
 
+    const allResourceTypes = [
+        'main_frame',
+        'sub_frame',
+        'stylesheet',
+        'script',
+        'image',
+        'font',
+        'object',
+        'xmlhttprequest',
+        'ping',
+        'csp_report',
+        'media',
+        'websocket',
+        'other',
+    ]
+
     const filters = await getAllowHostRules()
     /**
      * @type Rule[]
@@ -43,6 +59,7 @@ export async function installRequestHandleRules () {
                 "condition": {
                     "isUrlFilterCaseSensitive": false,
                     // "requestDomains": [],
+                    resourceTypes: allResourceTypes,
                     "urlFilter": filter
                 }
             })
@@ -60,6 +77,7 @@ export async function installRequestHandleRules () {
             },
             "condition": {
                 "isUrlFilterCaseSensitive": false,
+                resourceTypes: allResourceTypes,
                 "urlFilter": "*://*/*"
             }
         })

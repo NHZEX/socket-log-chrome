@@ -24,7 +24,7 @@ const DEFAULT_E2E_CONFIG_VALUE: ClientEndToEndConfig = {
 
 const DEFAULT_SOCKET_LOG_OPTIONS_VALUE: SocketLogOptions = {
     defaultTabIdMode: CompatibleTabIdMode.Fake_9x6,
-    e2eConfig: DEFAULT_E2E_CONFIG_VALUE
+    defaultE2EConfig: DEFAULT_E2E_CONFIG_VALUE
 }
 
 export const useGlobalOptionsStore = defineStore('global-options', () => {

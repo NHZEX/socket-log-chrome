@@ -9,7 +9,7 @@ import {CompatibleTabIdMode} from "~/enum/socket-log-options";
 
 const DEFAULT_SOCKET_LOG_OPTIONS_VALUE: SocketLogOptions = {
   defaultTabIdMode: CompatibleTabIdMode.Fake_9x6,
-  e2eConfig: {
+  defaultE2EConfig: {
     key: '',
   }
 }
@@ -57,7 +57,7 @@ defineExpose({
     <n-form-item label="[E2E] 默认加密密钥">
       <n-input
           type="password"
-          v-model:value.trim="formData.e2eConfig.key"
+          v-model:value.trim="formData.defaultE2EConfig.key"
           placeholder="端到端密钥"
           show-password-on="mousedown"
       />

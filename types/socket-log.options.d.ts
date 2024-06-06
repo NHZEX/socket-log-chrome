@@ -21,7 +21,7 @@ interface ClientEndToEndConfig {
 
 interface SocketLogOptions {
     defaultTabIdMode: CompatibleTabIdMode,
-    e2eConfig: ClientEndToEndConfig,
+    defaultE2EConfig: ClientEndToEndConfig,
 }
 
 interface SocketServerItem {

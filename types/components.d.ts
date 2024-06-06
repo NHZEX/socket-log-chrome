@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     GlobalOptionsManage: typeof import('./../src/components/global-options/GlobalOptionsManage.vue')['default']
+    ListenerRuleManage: typeof import('./../src/components/listener-rule/ListenerRuleManage.vue')['default']
     NButton: typeof import('naive-ui')['NButton']
     NButtonGroup: typeof import('naive-ui')['NButtonGroup']
     NDescriptions: typeof import('naive-ui')['NDescriptions']

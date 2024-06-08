@@ -17,7 +17,7 @@ export const LinkHoldAlarmName = 'listener-link-hold'
 
 export class Client {
 
-    ws: WebSocket | null = null
+    #ws: WebSocket | null = null
     #reconnectionTimer: number = 0
     #heartbeatTimer: number = 0
 
@@ -35,9 +35,9 @@ export class Client {
 
     isActive () {
         return !(
-            (this.ws ?? null) === null
-            || this.ws?.readyState === WebSocket.CLOSED
-            || this.ws?.readyState === WebSocket.CLOSING
+            (this.#ws ?? null) === null
+            || this.#ws?.readyState === WebSocket.CLOSED
+            || this.#ws?.readyState === WebSocket.CLOSING
         );
 
     }
@@ -79,14 +79,14 @@ export class Client {
 
         if (!globalOptionsReader.isEnableListen()) {
             console.info('当前监听状态：禁用')
-            if (this.ws) {
+            if (this.#ws) {
                 try {
-                    this.ws.close();
+                    this.#ws.close();
                 } catch (e) {
                     console.warn('ws close', e)
                 }
             }
-            this.ws = null
+            this.#ws = null
             disable_icon();
             await this.uninstallLinkHoldAlarm()
             return false;
@@ -98,14 +98,14 @@ export class Client {
 
         console.info('connection to ' + address);
 
-        if (this.ws) {
+        if (this.#ws) {
             // 确保心跳停止
             this.#heartbeatStop()
             //避免重复监听
-            this.ws.onclose = () => {}; //onclose 函数置空，防止重复连接
+            this.#ws.onclose = () => {}; //onclose 函数置空，防止重复连接
             // 如果 websocket 未关闭则关闭连接
-            if (WebSocket.CLOSED !== this.ws.readyState) {
-                this.ws.close();
+            if (WebSocket.CLOSED !== this.#ws.readyState) {
+                this.#ws.close();
             }
         }
 
@@ -139,7 +139,7 @@ export class Client {
         };
 
         await this.installLinkHoldAlarm()
-        this.ws = socket;
+        this.#ws = socket;
     }
 
     async e2eReload (options: ClientEndToEndConfig) {
@@ -167,7 +167,7 @@ export class Client {
 
     #sendPing () {
         const binaryData = new Uint8Array([0x05, 0x22, 0x09]);
-        this.ws!.send(binaryData.buffer);
+        this.#ws!.send(binaryData.buffer);
     }
 
     async #onMessage (event: MessageEvent) {

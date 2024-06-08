@@ -6,22 +6,22 @@ import {
 export
 class MessageProcessor {
 
-    clientId: string | null = null
+    #clientId: string | null = null
 
-    aseKey: CryptoKey | null = null
+    #aseKey: CryptoKey | null = null
 
-    aseAdd?: ArrayBuffer
-    enableE2E: boolean = false
-    e2eErrorCount: number = 0
+    #aseAdd?: ArrayBuffer
+    #enableE2E: boolean = false
+    #e2eErrorCount: number = 0
 
     constructor () {
     }
 
     async loadE2EConfig (clientId: string, config: { key: string })
     {
-        this.clientId = clientId
-        const addContent = new TextEncoder().encode(`SL-E2E_${this.clientId}`)
-        this.aseAdd = await self.crypto.subtle.digest(
+        this.#clientId = clientId
+        const addContent = new TextEncoder().encode(`SL-E2E_${this.#clientId}`)
+        this.#aseAdd = await self.crypto.subtle.digest(
             'SHA-256',
             addContent.buffer
         )
@@ -32,7 +32,7 @@ class MessageProcessor {
                 'SHA-256',
                 keyBinary.buffer
             )
-            this.aseKey = await self.crypto.subtle.importKey(
+            this.#aseKey = await self.crypto.subtle.importKey(
                 'raw',
                 keyHash,
                 {
@@ -41,22 +41,22 @@ class MessageProcessor {
                 true,
                 ['decrypt']
             )
-            this.enableE2E = true
+            this.#enableE2E = true
             await set_e2e_state('端到端活动中')
             console.info('[e2e] is enable')
         } else {
-            this.aseKey = null
-            this.enableE2E = false
+            this.#aseKey = null
+            this.#enableE2E = false
             await set_e2e_state('')
         }
-        this.e2eErrorCount = 0
+        this.#e2eErrorCount = 0
     }
 
     async disableE2E ()
     {
         console.info('[e2e] is soft disable')
-        this.aseKey = null
-        this.enableE2E = false
+        this.#aseKey = null
+        this.#enableE2E = false
         await set_e2e_state('端到端已禁用')
     }
 
@@ -81,7 +81,7 @@ class MessageProcessor {
             isEncryption,
         })
 
-        if (isEncryption && this.enableE2E === false) {
+        if (isEncryption && !this.#enableE2E) {
             return false
         }
 
@@ -89,17 +89,17 @@ class MessageProcessor {
         if (isEncryption) {
             try {
                 plaintext = await this.decryptMessage(binary.slice(4))
-                this.e2eErrorCount = 0
+                this.#e2eErrorCount = 0
                 console.debug(plaintext)
             } catch (e) {
-                this.e2eErrorCount++
+                this.#e2eErrorCount++
                 console.warn('decryptMessage fail')
                 console.dir(e)
                 notifications(
                     '日志格式无法解析',
                     `加密内容解密失败 (${e})`
                 )
-                if (this.e2eErrorCount >= 5) {
+                if (this.#e2eErrorCount >= 5) {
                     await this.disableE2E()
                     notifications(
                         '端到端加密通信已经被禁用',
@@ -149,7 +149,7 @@ class MessageProcessor {
     }
 
     async decryptMessage (binary: ArrayBuffer): Promise<ArrayBuffer | null> {
-        if (this.aseKey === null) {
+        if (this.#aseKey === null) {
             return null
         }
 
@@ -160,10 +160,10 @@ class MessageProcessor {
             {
                 name: "AES-GCM",
                 iv,
-                additionalData: this!.aseAdd,
+                additionalData: this!.#aseAdd,
                 tagLength: 128,
             },
-            this.aseKey,
+            this.#aseKey,
             ciphertext,
         );
     }

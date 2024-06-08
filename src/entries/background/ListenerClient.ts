@@ -77,6 +77,7 @@ export class Client {
             reinitialize: true
         });
 
+        disable_icon();
         if (!globalOptionsReader.isEnableListen) {
             console.info('当前监听状态：禁用')
             if (this.#ws) {
@@ -87,7 +88,6 @@ export class Client {
                 }
             }
             this.#ws = null
-            disable_icon();
             await this.uninstallLinkHoldAlarm()
             return false;
         }

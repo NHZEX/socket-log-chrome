@@ -22,6 +22,7 @@
               type="success"
               quaternary strong
               style="font-size: 24px"
+              :loading="enableListenLoading"
               :disabled="!enableServerInfoIsChange"
               @click="onSaveEnableServer"
           >
@@ -38,6 +39,30 @@
           </n-button>
         </n-button-group>
       </n-input-group>
+      <n-descriptions
+          label-placement="left"
+          bordered
+          :columns="6"
+          size="small"
+          style="padding-top: 8px"
+      >
+        <n-descriptions-item :span="6">
+          <template #label>ID</template>
+          {{ enableServerInfo?.id }}
+        </n-descriptions-item>
+        <n-descriptions-item :span="6">
+          <template #label>入口</template>
+          {{ enableServerInfo?.url }}
+        </n-descriptions-item>
+        <n-descriptions-item :span="3">
+          <template #label>客户</template>
+          {{ enableServerInfo?.clientId }} ({{ enableServerInfo?.clientIdParamMode }})
+        </n-descriptions-item>
+        <n-descriptions-item :span="3">
+          <template #label>心跳</template>
+          {{ enableServerInfo?.socketHeartbeat ? '✅' : '⛔️' }}
+        </n-descriptions-item>
+      </n-descriptions>
       <n-divider title-placement="left">控制</n-divider>
       <n-form
           label-placement="left"
@@ -60,11 +85,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, toRaw} from 'vue'
-import { restartConnection } from '~/utils/helper'
-import { useGlobalOptionsStore, initialize as globalOptionsInitialize } from "~/stores/GlobalOptionsStore";
-import { useServerCollection, initialize as serverCollectionInitialize } from "~/stores/ServerCollectionStore";
-import { SaveOutline, Close } from "@vicons/ionicons5";
+import {computed, onMounted, ref, toRaw, watch} from 'vue'
+import {restartConnection} from '~/utils/helper'
+import {initialize as globalOptionsInitialize, useGlobalOptionsStore} from "~/stores/GlobalOptionsStore";
+import {initialize as serverCollectionInitialize, useServerCollection} from "~/stores/ServerCollectionStore";
+import {Close, SaveOutline} from "@vicons/ionicons5";
 import type {ActiveServerId, ActiveServerInfo} from "~types/socket-log.options";
 
 Promise.any([
@@ -79,11 +104,6 @@ const enableServerId = ref<ActiveServerId>(null)
 const enableServerInfo = ref<ActiveServerInfo>(null)
 const enableServerInfoIsChange = computed(() => {
   return enableServerId.value !== globalOptionsStore.options.activeServerInfo?.id
-})
-watch(enableServerId, (id) => {
-  enableServerInfo.value = id === null
-      ? null
-      : serverCollectionStore.find(id as string)
 })
 
 const enableListenSwitch = ref(false)
@@ -113,6 +133,7 @@ const serverOptions = computed(() => {
 
 const onSaveEnableServer = async () => {
   try {
+    enableListenLoading.value = true
     await globalOptionsStore.saveOptions({
       options: {
         ...globalOptionsStore.options,
@@ -122,16 +143,25 @@ const onSaveEnableServer = async () => {
     const result = await restartConnection();
     console.debug(result)
   } finally {
-
+    enableListenLoading.value = false
   }
 }
 const onCancelChangeEnableServer = () => {
+  enableServerInfo.value = globalOptionsStore.options.activeServerInfo ?? null
   enableServerId.value = globalOptionsStore.options.activeServerInfo?.id ?? null
 }
 
 globalOptionsStore.onReady(() => {
+  enableServerInfo.value = toRaw(globalOptionsStore.options.activeServerInfo)
   enableServerId.value = globalOptionsStore.options.activeServerInfo?.id ?? null
+  console.dir(toRaw(globalOptionsStore.options))
   enableListenSwitch.value = globalOptionsStore.enableListen
+
+  watch(enableServerId, (id) => {
+    enableServerInfo.value = id === null
+        ? null
+        : serverCollectionStore.find(id as string)
+  })
 })
 onMounted(() => {
 })

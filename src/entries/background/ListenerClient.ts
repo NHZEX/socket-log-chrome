@@ -1,13 +1,13 @@
 import {
-    disable_icon,
-    enable_icon,
     badge_error_bright,
     badge_error_destroy,
     badge_normal_bright,
     badge_normal_destroy,
-    set_running_state,
-    notifications,
+    disable_icon,
+    enable_icon,
     getChromeMajorVersion,
+    notifications,
+    set_running_state,
 } from "~/utils/helper";
 import {MessageProcessor} from "./MessageProcessor";
 import {getGlobalOptionsReader} from "~/entries/background/StorageUtils";
@@ -77,7 +77,7 @@ export class Client {
             reinitialize: true
         });
 
-        if (!globalOptionsReader.isEnableListen()) {
+        if (!globalOptionsReader.isEnableListen) {
             console.info('当前监听状态：禁用')
             if (this.#ws) {
                 try {
@@ -93,8 +93,8 @@ export class Client {
         }
 
         // 载入监听地址
-        const address = globalOptionsReader.getAddressUrl();
-        this.#clientId = globalOptionsReader.getClientId()
+        const address = globalOptionsReader.addressUrl;
+        this.#clientId = globalOptionsReader.clientId
 
         console.info('connection to ' + address);
 
@@ -127,7 +127,7 @@ export class Client {
         };
 
         socket.onopen = async () => {
-            if (globalOptionsReader.isEnableClientHeartbeat()) {
+            if (globalOptionsReader.isEnableClientHeartbeat) {
                 this.#heartbeatBoot();
             }
             await set_running_state('服务连接成功');

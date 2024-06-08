@@ -8,10 +8,22 @@ interface OptionsReaderConstructorParams {
 }
 
 class SocketLogOptionsReader implements SocketLogOptions {
-    activeServerInfo!: ActiveServerInfo;
-    defaultE2EConfig!: ClientEndToEndConfig;
-    defaultTabIdMode!: CompatibleTabIdMode;
-    enableListen!: boolean;
+
+    #options!: SocketLogOptions
+    #enableListen!: boolean;
+
+    get activeServerInfo (): ActiveServerInfo {
+        return this.#options.activeServerInfo;
+    }
+    get defaultE2EConfig (): ClientEndToEndConfig {
+        return this.#options.defaultE2EConfig;
+    }
+    get defaultTabIdMode (): CompatibleTabIdMode {
+        return this.#options.defaultTabIdMode;
+    }
+    get enableListen (): boolean {
+        return this.#enableListen;
+    }
 
     constructor(values: OptionsReaderConstructorParams) {
         this.#setProps(values)
@@ -21,31 +33,26 @@ class SocketLogOptionsReader implements SocketLogOptions {
 
     #setProps (values: OptionsReaderConstructorParams) {
         if ('options' in values) {
-            const options = values!.options as SocketLogOptions
-            for (const [key, value] of Object.entries(options)) {
-                if (key in this) {
-                    this[key as keyof SocketLogOptions] = value;
-                }
-            }
+            this.#options = values!.options as SocketLogOptions;
         }
         if ('enableListen' in values) {
-            this.enableListen = values!.enableListen as boolean;
+            this.#enableListen = values!.enableListen as boolean;
         }
     }
 
-    isEnableListen (): boolean {
+    get isEnableListen (): boolean {
         return this.enableListen;
     }
 
-    isEnableClientHeartbeat (): boolean {
+    get isEnableClientHeartbeat (): boolean {
         return this.activeServerInfo!.socketHeartbeat;
     }
 
-    getClientId (): string {
+    get clientId (): string {
         return this.activeServerInfo!.clientId
     }
 
-    getAddressUrl (): string {
+    get addressUrl (): string {
         const url = new URL(this.activeServerInfo!.url);
 
         switch (this.activeServerInfo?.clientIdParamMode) {

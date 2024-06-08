@@ -11,14 +11,14 @@ export async function reinstallRequestHandleRules () {
         reinitialize: true,
     });
 
-    const clientId = globalOptionsReader.getClientId()
+    const clientId = globalOptionsReader.clientId
 
     if (!clientId) {
         console.log('InstallRequestHandleRules: client is empty, stop handle')
         await removeRequestHandleRules()
         return
     }
-    if (!globalOptionsReader.isEnableListen()) {
+    if (!globalOptionsReader.isEnableListen) {
         console.log('InstallRequestHandleRules: enableListen is false, stop handle')
         await removeRequestHandleRules()
         return

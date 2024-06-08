@@ -1,13 +1,22 @@
 <script setup lang="ts">
 import {computed, ref} from "vue";
 import type {SocketServerItem} from "~types/socket-log.options";
-import {useServerCollection, initialize} from "~/stores/ServerCollectionStore";
+import {initialize as globalOptionsInitialize, useGlobalOptionsStore} from "~/stores/GlobalOptionsStore";
+import {initialize, useServerCollection} from "~/stores/ServerCollectionStore";
 import SocketServerEditor from "~/components/server-manage/SocketServerEditor.vue";
 import {decodeTime} from "ulidx";
+import {CheckmarkCircleSharp} from "@vicons/ionicons5";
 
-initialize()
+Promise.all([
+  globalOptionsInitialize(),
+  initialize(),
+])
 
 const serverCollection = useServerCollection()
+const globalOptionsStore = useGlobalOptionsStore()
+
+const activeServerId = computed(() => globalOptionsStore.options?.activeServerInfo?.id)
+
 const editor = ref<InstanceType<typeof SocketServerEditor>>()
 
 interface SocketServerViewItem extends SocketServerItem {
@@ -52,7 +61,16 @@ const remove = async (item: SocketServerViewItem) => {
       </template>
       <n-list-item v-for="(item, index) of listView" :key="item.id">
         <n-thing>
-          <template #header><h4 style="margin: 0.25em 0">#{{ index }} {{ item.name }}</h4></template>
+          <template #header>
+            <h4 style="margin: 0.25em 0">
+              #{{ index }} {{ item.name }}
+              <template v-if="item.id === activeServerId">
+                <span style="font-size: 24px; color: #67C23A">
+                  <n-icon :component="CheckmarkCircleSharp"></n-icon>
+                </span>
+              </template>
+            </h4>
+          </template>
           <template #description>ID: {{ item.id }}</template>
           <template #footer>创建时间: {{ item.createdAt.toISOString() }}</template>
           <n-descriptions

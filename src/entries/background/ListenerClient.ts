@@ -7,11 +7,11 @@ import {
     enable_icon,
     getChromeMajorVersion,
     notifications,
-    set_running_state,
 } from "~/utils/helper";
 import {MessageProcessor} from "./MessageProcessor";
 import {getGlobalOptionsReader} from "~/entries/background/StorageUtils";
 import {ClientEndToEndConfig} from "~types/socket-log.options";
+import {saveStatusValues} from "~/stores/StatusStore";
 
 export const LinkHoldAlarmName = 'listener-link-hold'
 
@@ -64,7 +64,7 @@ export class Client {
         if (alarm.name === LinkHoldAlarmName) {
             if (!this.isActive()) {
                 console.debug('监听非活跃状态，尝试激活')
-                this.#onClone('服务已经关闭', false)
+                await this.#onClone('服务已经关闭', false)
                 await this.init()
             }
         }
@@ -109,7 +109,9 @@ export class Client {
             }
         }
 
-        await set_running_state('服务连接中');
+        await saveStatusValues({
+            clientStatusMessage: '服务连接中',
+        })
         if (!(options?.isAutoReconnection ?? false)) {
             await this.e2eReload(globalOptionsReader.defaultE2EConfig)
         }
@@ -130,7 +132,9 @@ export class Client {
             if (globalOptionsReader.isEnableClientHeartbeat) {
                 this.#heartbeatBoot();
             }
-            await set_running_state('服务连接成功');
+            await saveStatusValues({
+                clientStatusMessage: '服务连接成功',
+            })
             enable_icon();
         };
 
@@ -246,7 +250,7 @@ export class Client {
         }
     }
 
-    #onClone (stateMessage: string, reconnection = true) {
+    async #onClone (stateMessage: string, reconnection = true) {
         if (this.#reconnectionTimer) {
             clearTimeout(this.#reconnectionTimer);
         }
@@ -257,7 +261,9 @@ export class Client {
                 })
             }, 2000);
         }
-        set_running_state(stateMessage);
+        await saveStatusValues({
+            clientStatusMessage: stateMessage,
+        })
         disable_icon();
     }
 }

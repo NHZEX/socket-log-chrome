@@ -2,12 +2,12 @@ import {defineStore} from 'pinia'
 import {ref} from "vue";
 import store from "./index"
 import {
-    SocketAddress,
     ClientEndToEndConfig,
-    SocketLogOptions,
+    SocketAddress,
     SocketClientId,
+    SocketEnableClientHeartbeat,
     SocketEnableListen,
-    SocketEnableClientHeartbeat
+    SocketLogOptions
 } from "~types/socket-log.options";
 import {CompatibleTabIdMode} from "~/enum/socket-log-options";
 import EventEmitter from "eventemitter3";
@@ -103,15 +103,16 @@ export async function initialize() {
     eventDispatch.emit('init')
 }
 
-export async function saveLocalOptions(values: { [key: string]: unknown }) {
+export async function saveLocalOptions(values: { [key in LOCAL_KEY]?: unknown }) {
     const updateData: { [key: string]: unknown } = {}
     for (const [key, value] of Object.entries(values)) {
-        if (!LOCAL_KEYS.includes(key as LOCAL_KEY)) {
+        if (value === undefined || !LOCAL_KEYS.includes(key as LOCAL_KEY)) {
             continue
         }
         // 考虑实现对象值的合并能力
         updateData[key] = value
     }
+    console.log('?', updateData, values)
     await chrome.storage.local.set(updateData)
 }
 

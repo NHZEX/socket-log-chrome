@@ -1,7 +1,5 @@
-import {
-    notifications,
-    set_e2e_state
-} from "~/utils/helper";
+import {notifications,} from "~/utils/helper";
+import {saveStatusValues} from "~/stores/StatusStore";
 
 export
 class MessageProcessor {
@@ -42,12 +40,16 @@ class MessageProcessor {
                 ['decrypt']
             )
             this.#enableE2E = true
-            await set_e2e_state('端到端活动中')
+            await saveStatusValues({
+                e2eStatusMessage: '端到端已激活',
+            })
             console.info('[e2e] is enable')
         } else {
             this.#aseKey = null
             this.#enableE2E = false
-            await set_e2e_state('')
+            await saveStatusValues({
+                e2eStatusMessage: '',
+            })
         }
         this.#e2eErrorCount = 0
     }
@@ -57,7 +59,9 @@ class MessageProcessor {
         console.info('[e2e] is soft disable')
         this.#aseKey = null
         this.#enableE2E = false
-        await set_e2e_state('端到端已禁用')
+        await saveStatusValues({
+            e2eStatusMessage: '端到端已禁用',
+        })
     }
 
     async parseBinaryMessage (binary: ArrayBuffer): Promise<string | false>

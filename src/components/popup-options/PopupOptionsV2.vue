@@ -9,7 +9,7 @@
         }"
     >
       <template #header-extra>
-        状态：{{ statusMessage }}
+        状态：{{ clientStatusMessage }}, {{ e2eStatusMessage }}
       </template>
       <n-input-group class="buttons-warp">
         <n-input-group-label>服务器</n-input-group-label>
@@ -89,31 +89,42 @@ import {computed, onMounted, ref, toRaw, watch} from 'vue'
 import {restartConnection} from '~/utils/helper'
 import {initialize as globalOptionsInitialize, useGlobalOptionsStore} from "~/stores/GlobalOptionsStore";
 import {initialize as serverCollectionInitialize, useServerCollection} from "~/stores/ServerCollectionStore";
+import {initialize as statusInitialize, useStatusStore} from "~/stores/StatusStore";
 import {Close, SaveOutline} from "@vicons/ionicons5";
 import type {ActiveServerId, ActiveServerInfo} from "~types/socket-log.options";
 
 Promise.any([
   globalOptionsInitialize(),
   serverCollectionInitialize(),
+  statusInitialize(),
 ])
 
 const serverCollectionStore = useServerCollection()
 const globalOptionsStore = useGlobalOptionsStore()
+const statusStore = useStatusStore()
 
 const enableServerId = ref<ActiveServerId>(null)
 const enableServerInfo = ref<ActiveServerInfo>(null)
 const enableServerInfoIsChange = computed(() => {
   return enableServerId.value !== globalOptionsStore.options.activeServerInfo?.id
 })
+const e2eStatusMessage = computed(() => statusStore.e2eStatusMessage);
+const clientStatusMessage = computed(() => statusStore.clientStatusMessage);
 
 const enableListenSwitch = ref(false)
 const enableListenLoading = ref<boolean>(false)
 const onSaveOrRestart = async () => {
   try {
     enableListenLoading.value = true
-    await globalOptionsStore.saveOptions({
+    const values: { [key: string]: unknown } = {
       enableListen: enableListenSwitch.value,
-    })
+    }
+    if (enableServerInfoIsChange.value) {
+      const _options = structuredClone(toRaw(globalOptionsStore.options))
+      _options.activeServerInfo = toRaw(enableServerInfo.value)
+      values['options'] = _options
+    }
+    await globalOptionsStore.saveOptions(values)
     const result = await restartConnection();
     console.debug(result)
   } finally {
@@ -121,7 +132,6 @@ const onSaveOrRestart = async () => {
   }
 }
 
-const statusMessage = ref('')
 const serverOptions = computed(() => {
   return serverCollectionStore.collection.map(item => {
     return {
@@ -134,11 +144,10 @@ const serverOptions = computed(() => {
 const onSaveEnableServer = async () => {
   try {
     enableListenLoading.value = true
+    const _options = structuredClone(toRaw(globalOptionsStore.options))
+    _options.activeServerInfo = toRaw(enableServerInfo.value)
     await globalOptionsStore.saveOptions({
-      options: {
-        ...globalOptionsStore.options,
-        activeServerInfo: toRaw(enableServerInfo.value),
-      },
+      options: _options,
     })
     const result = await restartConnection();
     console.debug(result)

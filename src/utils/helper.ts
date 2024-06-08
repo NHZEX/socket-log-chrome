@@ -70,18 +70,6 @@ export function badge_error_destroy() {
     ])
 }
 
-export async function set_running_state(message: string) {
-    await chrome.storage.session.set({
-        status_message: message
-    });
-}
-
-export async function set_e2e_state(message: string) {
-    await chrome.storage.session.set({
-        e2e_status: message
-    });
-}
-
 export async function restartConnection() {
     return new Promise((resolve, reject) => {
         try {

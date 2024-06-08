@@ -74,9 +74,10 @@
               v-model:value="enableListenSwitch"
           ></n-switch>
         </n-form-item>
-        <n-form-item>
+        <div style="display: flex; justify-content: space-between">
           <n-button type="primary" @click="onSaveOrRestart" :loading="enableListenLoading">保存 / 重连</n-button>
-        </n-form-item>
+          <n-button type="info" @click="onOpenOptionsPage">更多选项</n-button>
+        </div>
       </n-form>
       <n-flex justify="center" vertical>
       </n-flex>
@@ -161,9 +162,8 @@ const onCancelChangeEnableServer = () => {
 }
 
 globalOptionsStore.onReady(() => {
-  enableServerInfo.value = toRaw(globalOptionsStore.options.activeServerInfo)
+  enableServerInfo.value = structuredClone(toRaw(globalOptionsStore.options.activeServerInfo))
   enableServerId.value = globalOptionsStore.options.activeServerInfo?.id ?? null
-  console.dir(toRaw(globalOptionsStore.options))
   enableListenSwitch.value = globalOptionsStore.enableListen
 
   watch(enableServerId, (id) => {
@@ -174,6 +174,10 @@ globalOptionsStore.onReady(() => {
 })
 onMounted(() => {
 })
+
+const onOpenOptionsPage = () => {
+  chrome.runtime.openOptionsPage()
+}
 </script>
 
 <style scoped>

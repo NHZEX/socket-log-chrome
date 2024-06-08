@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {computed, onMounted, onUnmounted, ref, nextTick} from "vue";
-import {useListenerRule, initialize} from "~/stores/ListenerRuleStore";
+import {computed, nextTick, onMounted, onUnmounted, ref, toRaw} from "vue";
+import {initialize, useListenerRule} from "~/stores/ListenerRuleStore";
 import {isEqual} from "radash";
 
 initialize()
@@ -44,7 +44,7 @@ const onSubmit = async () => {
 
 onMounted(async () => {
   listenerRuleStore.onReady(() => {
-    allowRules.value = listenerRuleStore.allowRules
+    allowRules.value = structuredClone(toRaw(listenerRuleStore.allowRules))
   })
 
   await refreshEnableRuleCount()

@@ -1,7 +1,11 @@
-import { migrateSetting } from "~/utils/migrate-setting"
+import {migrateSetting} from "~/utils/migrate-setting"
 import {installLikeOptionsChangedListener, reinstallRequestHandleRules} from './RequestHandle'
-import { Client } from "./ListenerClient"
-import {clearGlobalOptionsReaderInstance, listenerGlobalOptionsChanged} from "./StorageUtils"
+import {Client} from "./ListenerClient"
+import {
+    clearGlobalOptionsReaderInstance,
+    installActiveServerInfoSync,
+    listenerGlobalOptionsChanged
+} from "./StorageUtils"
 import DebugHelper from './DebugHelper'
 
 self.addEventListener('install', event => {
@@ -38,9 +42,7 @@ chrome.runtime.onMessage.addListener((message : { event: string }, sender, sendR
     let syncResponse = false
 
     if ('restart_connection' === message?.event) {
-        console.debug('[SW] restart connection listen server')
-        clearGlobalOptionsReaderInstance()
-        wsc.init().finally(() => {
+        restartClientConnection().finally(() => {
             sendResponse('restart connection done')
         })
         syncResponse = true
@@ -61,10 +63,18 @@ listenerGlobalOptionsChanged(async (options) => {
     await wsc.e2eReload(options.defaultE2EConfig)
 })
 
+installActiveServerInfoSync()
+
 chrome.alarms.onAlarm.addListener(async (alarm) => {
     console.debug('alarm trigger', alarm.name, alarm)
     await wsc?.alarmTriggerHandle(alarm)
 });
+
+export async function restartClientConnection () {
+    console.debug('[SW] restart connection listen server')
+    clearGlobalOptionsReaderInstance()
+    await wsc.init()
+}
 
 (async () => {
     // auto start

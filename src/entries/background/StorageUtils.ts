@@ -1,6 +1,8 @@
-import {isEqual} from "radash";
+import {isEqual, isString} from "radash";
 import type {ActiveServerInfo, ClientEndToEndConfig, SocketLogOptions} from "~types/socket-log.options";
 import {ClientIdParamMode, CompatibleTabIdMode} from "~/enum/socket-log-options";
+import {listenerServerCollectionChanged} from "~/stores/ServerCollectionStore";
+import {restartClientConnection} from "~/entries/background/main";
 
 interface OptionsReaderConstructorParams {
     options?: SocketLogOptions,
@@ -108,4 +110,38 @@ export function listenerGlobalOptionsChanged(fn: (options: SocketLogOptions) => 
     })
 }
 
-console.debug('SU', import.meta)
+export function installActiveServerInfoSync(): void {
+    console.debug('installActiveServerInfoSync')
+
+    listenerServerCollectionChanged(async (collection) => {
+        if (collection.length === 0) {
+            return;
+        }
+
+        const { options }: { options?: SocketLogOptions } = await chrome.storage.local.get(['options'])
+
+        if (options === undefined) {
+            return
+        }
+
+        const serverId = options?.activeServerInfo?.id
+
+        if (!isString(serverId)) {
+            return
+        }
+        const newServer = collection.find(v => v.id === serverId)
+        if (newServer === undefined) {
+            return
+        }
+        if (isEqual(newServer, options!.activeServerInfo)) {
+            return
+        } else {
+            options!.activeServerInfo = newServer
+        }
+        console.debug('activeServerInfo:sync', serverId)
+        await chrome.storage.local.set({
+            options,
+        })
+        await restartClientConnection()
+    })
+}

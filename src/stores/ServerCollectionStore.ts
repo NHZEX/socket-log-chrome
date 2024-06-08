@@ -114,3 +114,17 @@ function listenerStorageChanged() {
         store.collection = serverCollection.newValue
     })
 }
+
+export function listenerServerCollectionChanged(fn: (collection: SocketServerItem[]) => void) {
+    const store = useServerCollectionStoreHook()
+
+    chrome.storage.local.onChanged.addListener(({ serverCollection }) => {
+        if (serverCollection === undefined) {
+            return
+        }
+        if (isEqual(store.collection, serverCollection.newValue)) {
+            return;
+        }
+        fn (serverCollection.newValue)
+    })
+}

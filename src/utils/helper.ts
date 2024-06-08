@@ -83,14 +83,21 @@ export async function set_e2e_state(message: string) {
 }
 
 export async function restartConnection() {
-    // todo 通过事件实现
-    await chrome.runtime.sendMessage(
-        null,
-        {
-            event: 'restart_connection',
-        },
-
-    )
+    return new Promise((resolve, reject) => {
+        try {
+            chrome.runtime.sendMessage(
+                {
+                    event: 'restart_connection',
+                },
+                {},
+                (response) => {
+                    resolve(response)
+                }
+            )
+        } catch (e) {
+            reject(e)
+        }
+    });
 }
 
 export function notifications (title: string, message: string, timeout = 5000) {

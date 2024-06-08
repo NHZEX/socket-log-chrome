@@ -1,7 +1,7 @@
 import {defineStore} from 'pinia'
 import {ref} from "vue";
 import store from "./index"
-import type {
+import {
     SocketAddress,
     ClientEndToEndConfig,
     SocketLogOptions,
@@ -10,6 +10,7 @@ import type {
     SocketEnableClientHeartbeat
 } from "~types/socket-log.options";
 import {CompatibleTabIdMode} from "~/enum/socket-log-options";
+import EventEmitter from "eventemitter3";
 
 const DEFAULT_ADDRESS_VALUE: SocketAddress = {
     tls: false,
@@ -24,8 +25,12 @@ const DEFAULT_E2E_CONFIG_VALUE: ClientEndToEndConfig = {
 
 const DEFAULT_SOCKET_LOG_OPTIONS_VALUE: SocketLogOptions = {
     defaultTabIdMode: CompatibleTabIdMode.Fake_9x6,
-    defaultE2EConfig: DEFAULT_E2E_CONFIG_VALUE
+    defaultE2EConfig: DEFAULT_E2E_CONFIG_VALUE,
+    activeServerInfo: null,
 }
+
+let isInitialize = false
+const eventDispatch = new EventEmitter()
 
 export const useGlobalOptionsStore = defineStore('global-options', () => {
 
@@ -35,7 +40,25 @@ export const useGlobalOptionsStore = defineStore('global-options', () => {
     const enableListen = ref<SocketEnableListen>(false)
     const enableClientHeartbeat = ref<SocketEnableClientHeartbeat>(false)
     const e2eConfig = ref<ClientEndToEndConfig>(DEFAULT_E2E_CONFIG_VALUE)
+
     const options = ref<SocketLogOptions>(DEFAULT_SOCKET_LOG_OPTIONS_VALUE)
+
+    const onReady = (fn: () => void): void => {
+        if (isInitialize) {
+            fn()
+        } else {
+            eventDispatch.once('init', () => fn())
+        }
+    }
+
+    const saveOption = async (name: LOCAL_KEY, value: unknown) => {
+        await saveLocalOptions({
+            [name]: value,
+        })
+    }
+    const saveOptions = async (values: { [key in LOCAL_KEY]?: unknown }) => {
+        await saveLocalOptions(values)
+    }
 
     return {
         address,
@@ -44,9 +67,11 @@ export const useGlobalOptionsStore = defineStore('global-options', () => {
         enableClientHeartbeat,
         e2eConfig,
         options,
+        onReady,
+        saveOption,
+        saveOptions,
     }
 })
-let isInitialize = false
 
 const LOCAL_KEYS = [
     'address',
@@ -55,7 +80,9 @@ const LOCAL_KEYS = [
     'enableClientHeartbeat',
     'e2eConfig',
     'options'
-]
+] as const
+
+type LOCAL_KEY = typeof LOCAL_KEYS[number];
 
 export function useGlobalOptionsStoreHook() {
     return useGlobalOptionsStore(store)
@@ -73,12 +100,13 @@ export async function initialize() {
     listenerStorageChanged(LOCAL_KEYS)
 
     isInitialize = true
+    eventDispatch.emit('init')
 }
 
 export async function saveLocalOptions(values: { [key: string]: unknown }) {
     const updateData: { [key: string]: unknown } = {}
     for (const [key, value] of Object.entries(values)) {
-        if (!LOCAL_KEYS.includes(key)) {
+        if (!LOCAL_KEYS.includes(key as LOCAL_KEY)) {
             continue
         }
         // 考虑实现对象值的合并能力
@@ -118,13 +146,13 @@ function putStorageValues(values: { [key: string]: unknown }) {
     }
 }
 
-function listenerStorageChanged(keys: string[]) {
+function listenerStorageChanged(keys: ReadonlyArray<LOCAL_KEY>) {
     chrome.storage.local.onChanged.addListener(async (values) => {
 
         const updateData: { [key: string]: unknown } = {}
 
         for (const [key, value] of Object.entries(values)) {
-            if (!keys.includes(key)) {
+            if (!keys.includes(key as LOCAL_KEY)) {
                 continue
             }
             updateData[key] = value.newValue

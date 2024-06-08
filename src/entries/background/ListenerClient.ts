@@ -1,11 +1,4 @@
 import {
-    isEnableListen,
-    getAddressData,
-    getClientId,
-    isEnableClientHeartbeat,
-    getE2EConfig,
-} from "~/utils/storage";
-import {
     disable_icon,
     enable_icon,
     badge_error_bright,
@@ -16,24 +9,21 @@ import {
     notifications,
     getChromeMajorVersion,
 } from "~/utils/helper";
-import { MessageProcessor } from "./MessageProcessor";
+import {MessageProcessor} from "./MessageProcessor";
+import {getGlobalOptionsReader} from "~/entries/background/StorageUtils";
+import {ClientEndToEndConfig} from "~types/socket-log.options";
 
 export const LinkHoldAlarmName = 'listener-link-hold'
 
 export class Client {
-
-    address = {
-        tls: false,
-        host: 'localhost',
-        port: 1229,
-        path: '/',
-    };
 
     ws: WebSocket | null = null
     #reconnectionTimer: number = 0
     #heartbeatTimer: number = 0
 
     #messageProcessor: MessageProcessor
+
+    #clientId!: string
 
     constructor () {
         this.#messageProcessor = new MessageProcessor()
@@ -83,7 +73,11 @@ export class Client {
     async init (options: {
         isAutoReconnection?: boolean
     } = {}) {
-        if (await isEnableListen() === false) {
+        const globalOptionsReader = await getGlobalOptionsReader({
+            reinitialize: true
+        });
+
+        if (!globalOptionsReader.isEnableListen()) {
             console.info('当前监听状态：禁用')
             if (this.ws) {
                 try {
@@ -99,21 +93,14 @@ export class Client {
         }
 
         // 载入监听地址
-        this.address = await getAddressData();
-        const clientId = await getClientId();
-
-        let path = this.address.path.trim()
-        if (!path.startsWith('/')) {
-            path = '/' + path
-        }
-        if (!path.endsWith('/')) {
-            path = path + '/'
-        }
-        const address = `${this.address.tls ? 'wss' : 'ws'}://${this.address.host}:${this.address.port}${path}${clientId}`;
+        const address = globalOptionsReader.getAddressUrl();
+        this.#clientId = globalOptionsReader.getClientId()
 
         console.info('connection to ' + address);
 
         if (this.ws) {
+            // 确保心跳停止
+            this.#heartbeatStop()
             //避免重复监听
             this.ws.onclose = () => {}; //onclose 函数置空，防止重复连接
             // 如果 websocket 未关闭则关闭连接
@@ -124,7 +111,7 @@ export class Client {
 
         await set_running_state('服务连接中');
         if (!(options?.isAutoReconnection ?? false)) {
-            await this.e2eReload()
+            await this.e2eReload(globalOptionsReader.defaultE2EConfig)
         }
         const socket = new WebSocket(address);
         socket.binaryType = 'arraybuffer'
@@ -140,7 +127,7 @@ export class Client {
         };
 
         socket.onopen = async () => {
-            if (await isEnableClientHeartbeat()) {
+            if (globalOptionsReader.isEnableClientHeartbeat()) {
                 this.#heartbeatBoot();
             }
             await set_running_state('服务连接成功');
@@ -155,11 +142,11 @@ export class Client {
         this.ws = socket;
     }
 
-    async e2eReload () {
+    async e2eReload (options: ClientEndToEndConfig) {
         console.info('[e2e] reload')
         await this.#messageProcessor.loadE2EConfig(
-            await getClientId(),
-            await getE2EConfig(),
+            this.#clientId,
+            options,
         )
     }
 
@@ -174,6 +161,7 @@ export class Client {
     #heartbeatStop () {
         if (this.#heartbeatTimer) {
             clearInterval(this.#heartbeatTimer);
+            this.#heartbeatTimer = 0
         }
     }
 
@@ -197,8 +185,6 @@ export class Client {
             content = event.data
         }
 
-        const client_id = await getClientId();
-
         let result: {
             client_id: string | null,
             force_client_id: string | null,
@@ -220,7 +206,7 @@ export class Client {
         }
 
         // 分发用户一致则继续分发日志
-        if (!(result.client_id === client_id || result.force_client_id === client_id)) {
+        if (!(result.client_id === this.#clientId || result.force_client_id === this.#clientId)) {
             return
         }
 

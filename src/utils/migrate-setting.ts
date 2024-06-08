@@ -30,9 +30,11 @@ async function setupOffscreenDocument(path: string, reasons: chrome.offscreen.Re
     }
 }
 
-export async function migrateSetting()
+export async function migrateSetting(previousVersion?: string)
 {
     console.info('尝试执行配置迁移')
+    // todo 重新适配 2.x -> 3.x
+    // todo 新增适配 3.x -> 4.x
 
     const address = await getAddressData()
     console.debug('current-address', address)

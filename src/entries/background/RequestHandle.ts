@@ -1,17 +1,23 @@
-import { getAllowHostRules, getClientId, isEnableListen } from "~/utils/storage";
+import { getAllowHostRules } from "~/utils/storage";
+import { getGlobalOptionsReader } from "./StorageUtils";
 import { IMG_LOGO } from "~/utils/helper";
+import {debounce, isEqual} from "radash";
+import {SocketLogOptions} from "~types/socket-log.options";
 // import browser from "webextension-polyfill";
 
-export async function installRequestHandleRules () {
-    const clientId = await getClientId()
-    const enableListen = await isEnableListen()
+export async function reinstallRequestHandleRules () {
+    const globalOptionsReader = await getGlobalOptionsReader({
+        reinitialize: true,
+    });
+
+    const clientId = globalOptionsReader.getClientId()
 
     if (!clientId) {
         console.log('InstallRequestHandleRules: client is empty, stop handle')
         await removeRequestHandleRules()
         return
     }
-    if (enableListen === false) {
+    if (!globalOptionsReader.isEnableListen()) {
         console.log('InstallRequestHandleRules: enableListen is false, stop handle')
         await removeRequestHandleRules()
         return
@@ -109,5 +115,50 @@ export async function removeRequestHandleRules ()
     await chrome.declarativeNetRequest.updateDynamicRules({
         removeRuleIds: oldRuleIds,
         addRules: []
+    })
+}
+
+export const triggerRebuildRequestHandleRules = debounce({
+    delay: 100,
+}, reinstallRequestHandleRules)
+
+export function installLikeOptionsChangedListener()
+{
+    // listener GlobalOptions Changed
+    chrome.storage.local.onChanged.addListener(async (values) => {
+        let rebuild = false
+        if ('options' in values) {
+            const { newValue, oldValue } = values.options as { newValue: SocketLogOptions, oldValue: SocketLogOptions }
+
+            if (newValue?.activeServerInfo?.clientId !== oldValue?.activeServerInfo?.clientId) {
+                rebuild = true
+                console.debug('[RH] clientId onChanged', newValue?.activeServerInfo?.clientId, oldValue?.activeServerInfo?.clientId)
+            }
+        }
+        if ('enableListen' in values) {
+            const { newValue, oldValue } = values.enableListen as { newValue: boolean, oldValue: boolean }
+
+            if (newValue !== oldValue) {
+                rebuild = true
+                console.debug('[RH] enableListen onChanged', newValue, oldValue)
+            }
+        }
+        if (rebuild) {
+            console.debug('[RH] trigger rebuild')
+            triggerRebuildRequestHandleRules()
+        }
+    })
+
+    // listener Rules Changed
+    chrome.storage.sync.onChanged.addListener(async ({ currentRuleFlag }) => {
+        if (currentRuleFlag === undefined) {
+            return
+        }
+        const { newValue, oldValue } = currentRuleFlag
+        console.debug('[RH] rules onChanged', newValue, oldValue)
+        if (isEqual(newValue, oldValue)) {
+            console.debug('[RH] trigger rebuild')
+            triggerRebuildRequestHandleRules()
+        }
     })
 }

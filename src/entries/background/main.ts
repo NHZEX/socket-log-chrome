@@ -1,11 +1,8 @@
-import { isObject } from "lodash-es";
-import {
-    listenerAllowHostRulesChanged,
-    listenerE2EConfigChanged,
-} from "~/utils/storage";
-import { migrateSetting } from "~/utils/migrate-setting";
-import { installRequestHandleRules } from './RequestHandle'
-import { Client } from "./ListenerClient";
+import { migrateSetting } from "~/utils/migrate-setting"
+import {installLikeOptionsChangedListener, reinstallRequestHandleRules} from './RequestHandle'
+import { Client } from "./ListenerClient"
+import {clearGlobalOptionsReaderInstance, listenerGlobalOptionsChanged} from "./StorageUtils"
+import DebugHelper from './DebugHelper'
 
 self.addEventListener('install', event => {
     console.log('[ServiceWorker] 工作进程被安装', event)
@@ -14,22 +11,20 @@ self.addEventListener('activate', event => {
     console.log('[ServiceWorker] 工作进程被激活', event)
 });
 
-chrome.runtime.onInstalled.addListener(async ({ reason }) => {
+chrome.runtime.onInstalled.addListener(async (details) => {
+    const { reason } = details || {}
     console.log('onInstalled', reason)
 
     if (reason === 'install') {
-        // await chrome.alarms.create('listener-heartbeat', {
-        //     delayInMinutes: 0.5,
-        //     periodInMinutes: 0.5
-        // });
+        // 未使用
     } else if (reason === 'update') {
         // 执行配置迁移
         setTimeout(async () => {
-            await migrateSetting()
+            await migrateSetting(details!.previousVersion)
         }, 0)
     }
     if (reason === 'install' || reason === 'update' || reason === 'chrome_update') {
-        await installRequestHandleRules()
+        await reinstallRequestHandleRules()
 
         console.debug('active-alarms', (await chrome.alarms.getAll()).map(v => `${v.name}: ${v.periodInMinutes} minutes`))
     }
@@ -38,49 +33,32 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
     }
 });
 
-chrome.runtime.onMessage.addListener(async (message : { event: string }, sender, sendResponse) => {
-    console.log('onMessage sender', sender)
-    if (!isObject(message)) {
-        return false;
+chrome.runtime.onMessage.addListener((message : { event: string }, sender, sendResponse) => {
+    console.debug('[SW] onMessage sender', sender)
+    let syncResponse = false
+
+    if ('restart_connection' === message?.event) {
+        console.debug('[SW] restart connection listen server')
+        clearGlobalOptionsReaderInstance()
+        wsc.init().finally(() => {
+            sendResponse('restart connection done')
+        })
+        syncResponse = true
     }
-    if ('restart_connection' === message.event) {
-        console.debug('restart_connection listen server')
-        await wsc.init()
-        sendResponse('restart_connection done')
-    }
+
+    return syncResponse
 });
 
 // chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 //     console.log('tabsOnUpdated', tabId, changeInfo, tab)
 // });
 
-chrome.storage.local.onChanged.addListener(async ({ clientId, enableListen }) => {
-    if (clientId !== undefined) {
-        const { newValue, oldValue } = clientId
-        if (newValue !== oldValue) {
-            console.log('clientId.onChanged', newValue, oldValue)
-            await installRequestHandleRules()
-            return
-        }
-    }
-    if (enableListen !== undefined) {
-        const { newValue, oldValue } = enableListen
-        if (newValue !== oldValue) {
-            console.log('enableListen.onChanged', newValue, oldValue)
-            await installRequestHandleRules()
-            return
-        }
-    }
-})
-
-listenerAllowHostRulesChanged(async () => {
-    await installRequestHandleRules()
-})
+installLikeOptionsChangedListener()
 
 const wsc = new Client()
 
-listenerE2EConfigChanged(async () => {
-    await wsc.e2eReload()
+listenerGlobalOptionsChanged(async (options) => {
+    await wsc.e2eReload(options.defaultE2EConfig)
 })
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
@@ -91,5 +69,5 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 (async () => {
     // auto start
     await wsc.init()
-    await migrateSetting()
+    // await migrateSetting()
 })();

@@ -22,6 +22,7 @@ interface ClientEndToEndConfig {
 interface SocketLogOptions {
     defaultTabIdMode: CompatibleTabIdMode,
     defaultE2EConfig: ClientEndToEndConfig,
+    activeServerInfo: ActiveServerInfo,
 }
 
 interface SocketServerItem {
@@ -32,3 +33,7 @@ interface SocketServerItem {
     socketHeartbeat: SocketEnableClientHeartbeat,
     clientIdParamMode: ClientIdParamMode,
 }
+
+type ActiveServerId = string | null
+type ActiveServerInfo = SocketServerItem | null
+type EnableServerInfo = SocketServerItem | null

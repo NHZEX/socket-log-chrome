@@ -1,13 +1,14 @@
 <script setup lang="ts">
 
 import {onMounted, ref, toRaw} from "vue";
-import {useGlobalOptionsStore, initialize, saveLocalOptions} from "~/stores/GlobalOptionsStore";
+import {initialize, saveLocalOptions, useGlobalOptionsStore} from "~/stores/GlobalOptionsStore";
 import {storeToRefs} from "pinia";
 import {useMessage} from 'naive-ui'
 import type {SocketLogOptions} from "~types/socket-log.options";
 import {CompatibleTabIdMode} from "~/enum/socket-log-options";
 
 const DEFAULT_SOCKET_LOG_OPTIONS_VALUE: SocketLogOptions = {
+  activeServerInfo: null,
   defaultTabIdMode: CompatibleTabIdMode.Fake_9x6,
   defaultE2EConfig: {
     key: '',

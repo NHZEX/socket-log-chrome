@@ -27,8 +27,6 @@ class SocketLogOptionsReader implements SocketLogOptions {
 
     constructor(values: OptionsReaderConstructorParams) {
         this.#setProps(values)
-
-        // this.#listenerChanged()
     }
 
     #setProps (values: OptionsReaderConstructorParams) {
@@ -71,23 +69,6 @@ class SocketLogOptionsReader implements SocketLogOptions {
         }
 
         return url.toString()
-    }
-
-    #listenerChanged () {
-        chrome.storage.local.onChanged.addListener(async (values) => {
-            const newValues: OptionsReaderConstructorParams = {}
-            if ('options' in values) {
-                newValues.options = values!.options.newValue
-            }
-            if ('enableListen' in values) {
-                newValues.enableListen = values!.enableListen.newValue;
-            }
-            if (Object.keys(newValues).length > 0) {
-                console.debug('SocketLogOptions.onChanged', Object.keys(newValues))
-                this.#setProps(newValues)
-                console.dir(this)
-            }
-        })
     }
 }
 

@@ -4,7 +4,7 @@ import type {SocketServerItem} from "~types/socket-log.options";
 import {ClientIdParamMode, ClientIdParamModeLabel} from "~/enum/socket-log-options";
 import type {FormInst, FormItemRule} from "naive-ui";
 import {ulid} from "ulidx";
-import {useServerCollection, initialize} from "~/stores/ServerCollectionStore";
+import {initialize, useServerCollection} from "~/stores/ServerCollectionStore";
 
 initialize()
 
@@ -69,33 +69,51 @@ const formRules: { [key in keyof IFormData]?: FormItemRule | FormItemRule[] } = 
   },
 }
 
-const urlValidationStatus = computed<"success" | "error" | "warning" | undefined>(() => {
+const urlValidation = computed<{
+  status: "success" | "error" | "warning" | undefined,
+  feedback: string | undefined,
+  valid: boolean,
+}>(() => {
   if (!urlForm.value.scheme) {
-    urlValidationFeedback.value = '请选择 scheme'
-    return 'error';
+    return {
+      status: 'error',
+      feedback: '请选择 scheme',
+      valid: false,
+    };
   }
   if (urlForm.value.url === '') {
-    urlValidationFeedback.value = '请输入连接地址'
-    return 'warning';
+    return {
+      status: 'warning',
+      feedback: '请输入连接地址',
+      valid: false,
+    };
   }
   if (urlForm.value.url.startsWith('/')) {
-    urlValidationFeedback.value = '地址前缀不能包含 /'
-    return 'error';
+    return {
+      status: 'error',
+      feedback: '地址前缀不能包含 /',
+      valid: false,
+    }
   }
   try {
     new URL(newUrl.value)
   } catch (e) {
-    urlValidationFeedback.value = '输入地址格式无效'
-    return 'error';
+    return {
+      status: 'error',
+      feedback: '输入地址格式无效',
+      valid: false,
+    }
   }
-  urlValidationFeedback.value = undefined
-  return 'success';
+  return {
+    status: 'success',
+    feedback: undefined,
+    valid: true,
+  }
 })
-const urlValidationFeedback = ref<string|undefined>(undefined)
 
 const onSave = () => {
   formRef.value?.validate(async errors => {
-    if (errors || urlValidationStatus.value !== 'success') {
+    if (errors || !urlValidation.value.valid) {
       console.log(errors)
       nMessage.warning('表单存在错误，请修正后再提交')
       return
@@ -107,7 +125,7 @@ const onSave = () => {
       id: formData.value.id ?? ulid(),
     }
 
-    console.log('save', data)
+    console.debug('saveSocketServer', data)
 
     try {
       if (isEdit.value) {
@@ -199,8 +217,8 @@ defineExpose({
     <n-form-item
         label="URL"
         :rule="{ required: true }"
-        :feedback="urlValidationFeedback"
-        :validation-status="urlValidationStatus"
+        :feedback="urlValidation.feedback"
+        :validation-status="urlValidation.status"
     >
       <n-input-group>
         <n-select

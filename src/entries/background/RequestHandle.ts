@@ -1,8 +1,9 @@
-import { getAllowHostRules } from "~/utils/storage";
-import { getGlobalOptionsReader } from "./StorageUtils";
-import { IMG_LOGO } from "~/utils/helper";
+import {getAllowHostRules} from "~/utils/storage";
+import {getGlobalOptionsReader} from "./StorageUtils";
+import {notifications} from "~/utils/helper";
 import {debounce, isEqual} from "radash";
 import {SocketLogOptions} from "~types/socket-log.options";
+
 // import browser from "webextension-polyfill";
 
 export async function reinstallRequestHandleRules () {
@@ -94,16 +95,7 @@ export async function reinstallRequestHandleRules () {
     } catch (e) {
         const error = e as Error
         console.error(error)
-        chrome.notifications.create({
-            type: "basic",
-            title: "更新域名监听名单失败",
-            message: `请检查输入是否有效：\n${error?.message || ''}`,
-            iconUrl: IMG_LOGO
-        }, function (id) {
-            setTimeout(function () {
-                chrome.notifications.clear(id);
-            }, 10000);
-        });
+        notifications("更新域名监听名单失败", `请检查输入是否有效：\n${error?.message || ''}`, 10000)
     }
 }
 

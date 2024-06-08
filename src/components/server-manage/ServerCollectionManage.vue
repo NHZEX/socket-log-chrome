@@ -93,7 +93,7 @@ const remove = async (item: SocketServerViewItem) => {
           </n-descriptions>
         </n-thing>
         <template #suffix>
-          <n-button-group vertical>
+          <n-button-group vertical style="min-width: 70px">
             <n-button type="info" @click="edit(item)">编辑</n-button>
             <n-button type="info" @click="clone(item)">克隆</n-button>
             <n-popconfirm
@@ -102,7 +102,7 @@ const remove = async (item: SocketServerViewItem) => {
                 @positive-click="remove(item)"
             >
               <template #trigger>
-                <n-button type="error">删除</n-button>
+                <n-button type="error" :disabled="item.id === activeServerId">{{ item.id === activeServerId ? '使用中' : '删除' }}</n-button>
               </template>
               确认删除该项目（{{ item.name }}）吗？
               <br>ID: {{ item.id }}

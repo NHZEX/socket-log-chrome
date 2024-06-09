@@ -14,6 +14,10 @@ class SocketLogOptionsReader implements SocketLogOptions {
     #options!: SocketLogOptions
     #enableListen!: boolean;
 
+    get options (): SocketLogOptions {
+        return this.#options
+    }
+
     get activeServerInfo (): ActiveServerInfo {
         return this.#options.activeServerInfo;
     }

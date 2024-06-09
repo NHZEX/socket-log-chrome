@@ -190,18 +190,19 @@ export class Client {
         }
 
         let result: {
-            client_id: string | null,
-            force_client_id: string | null,
+            tabId?: number | null,
+            clientId: string | null,
+            forceClientId: string | null,
             logs: object[],
         };
         try {
             const data = JSON.parse(content);
             result = {
-                client_id: data.client_id,
-                force_client_id: data.force_client_id,
+                tabId: data?.tabid ?? -1,
+                clientId: data.client_id,
+                forceClientId: data.force_client_id,
                 logs: data.logs,
             }
-            // result.tabid = data['tabid'];
         } catch (e) {
             badge_error_bright();
             notifications('日志内容无法解析', '解码 json 异常: ' + e)
@@ -210,7 +211,7 @@ export class Client {
         }
 
         // 分发用户一致则继续分发日志
-        if (!(result.client_id === this.#clientId || result.force_client_id === this.#clientId)) {
+        if (!(result.clientId === this.#clientId || result.forceClientId === this.#clientId)) {
             return
         }
 
@@ -223,7 +224,7 @@ export class Client {
                 currentWindow: true,
             })
             if (tabs.length > 0) {
-                console.info('即将推送 tabs: ', tabs)
+                console.debug('即将推送 tabs: ', tabs, result)
                 const tab: chrome.tabs.Tab = tabs[0];
                 await this.#sendLogMessage(tab, result.logs)
             }

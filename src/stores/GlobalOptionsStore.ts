@@ -74,11 +74,7 @@ export const useGlobalOptionsStore = defineStore('global-options', () => {
 })
 
 const LOCAL_KEYS = [
-    'address',
-    'clientId',
     'enableListen',
-    'enableClientHeartbeat',
-    'e2eConfig',
     'options'
 ] as const
 
@@ -112,32 +108,13 @@ export async function saveLocalOptions(values: { [key in LOCAL_KEY]?: unknown })
         // 考虑实现对象值的合并能力
         updateData[key] = value
     }
-    console.log('?', updateData, values)
     await chrome.storage.local.set(updateData)
 }
 
 function putStorageValues(values: { [key: string]: unknown }) {
     const options = useGlobalOptionsStoreHook()
-    if ('address' in values) {
-        options.address = {
-            ...DEFAULT_ADDRESS_VALUE,
-            ...(values.address ?? {})
-        }
-    }
-    if ('clientId' in values) {
-        options.clientId = (values.clientId ?? '') as string
-    }
     if ('enableListen' in values) {
         options.enableListen = (values.enableListen ?? false) as boolean
-    }
-    if ('enableClientHeartbeat' in values) {
-        options.enableClientHeartbeat = (values.enableClientHeartbeat ?? 'off') === 'on'
-    }
-    if ('e2eConfig' in values) {
-        options.e2eConfig = {
-            ...DEFAULT_E2E_CONFIG_VALUE,
-            ...(values.e2eConfig ?? {})
-        }
     }
     if ('options' in values) {
         options.options = {

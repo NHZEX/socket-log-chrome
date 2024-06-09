@@ -94,9 +94,9 @@ async function migrate2to4()
                     }
                 }
                 const newSetting: {
-                    options: SocketLogOptions
-                    enableListen: boolean
-                } = {} as any
+                    options?: SocketLogOptions
+                    enableListen?: boolean
+                } = {}
                 const address = get(message, 'data.address', '{}')
                 if (address) {
                     console.debug('[MS] 读取到老配置，开始迁移', address)
@@ -133,6 +133,8 @@ async function migrate2to4()
                 console.info('[MS] 迁移的新设置', newSetting)
                 await chrome.storage.local.set(newSetting)
                 await appendServerCollection(newOptions.activeServerInfo!)
+            } catch (e) {
+                console.error('[MS] 设置迁移发生故障', e)
             } finally {
                 setTimeout(async () => {
                     chrome.runtime.onMessage.removeListener(readCallback)
@@ -192,9 +194,9 @@ async function migrate3to4()
             }
         }
         const newSetting: {
-            options: SocketLogOptions
-            enableListen: boolean
-        } = {} as any
+            options?: SocketLogOptions
+            enableListen?: boolean
+        } = {}
 
         console.debug('[MS] read values', values)
 
@@ -224,7 +226,8 @@ async function migrate3to4()
         console.info('[MS] 迁移的新设置', newSetting)
         await chrome.storage.local.set(newSetting)
         await appendServerCollection(newOptions.activeServerInfo!)
-    } finally {
+    } catch (e) {
+        console.error('[MS] 设置迁移发生故障', e)
     }
     notifications(
         `重大版本更新通知 (${getExtensionsVersion()})`,

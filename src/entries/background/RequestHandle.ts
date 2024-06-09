@@ -2,7 +2,8 @@ import {getAllowHostRules} from "~/utils/storage";
 import {getGlobalOptionsReader} from "./StorageUtils";
 import {notifications} from "~/utils/helper";
 import {debounce, isEqual} from "radash";
-import {SocketLogOptions} from "~types/socket-log.options";
+import type {SocketLogOptions} from "~types/socket-log.options";
+import {CompatibleTabIdMode} from "~/enum/socket-log-options";
 
 // import browser from "webextension-polyfill";
 
@@ -14,20 +15,21 @@ export async function reinstallRequestHandleRules () {
     const clientId = globalOptionsReader.clientId
 
     if (!clientId) {
-        console.log('InstallRequestHandleRules: client is empty, stop handle')
+        console.info('InstallRequestHandleRules: client is empty, stop handle')
         await removeRequestHandleRules()
         return
     }
     if (!globalOptionsReader.isEnableListen) {
-        console.log('InstallRequestHandleRules: enableListen is false, stop handle')
+        console.info('InstallRequestHandleRules: enableListen is false, stop handle')
         await removeRequestHandleRules()
         return
     }
 
-    console.log(`InstallRequestHandleRules: client = ${clientId}`)
 
-    // todo 兼容性解决方案 tabId 填充假值，接受端需要调整 tabId 处理逻辑
-    const userAgent = `${navigator.userAgent} SocketLog(tabid=999999&client_id=${clientId})`
+    const params = buildParams(globalOptionsReader)
+    console.info(`InstallRequestHandleRules: args = (${params})`)
+
+    const userAgent = `${navigator.userAgent} SocketLog(${params})`
 
     const filters = await getAllowHostRules()
 
@@ -99,6 +101,20 @@ export async function reinstallRequestHandleRules () {
     }
 }
 
+function buildParams (options: SocketLogOptions): string|null {
+    const clientId = options.activeServerInfo!.clientId
+
+    const tabIdMode = options.defaultTabIdMode
+
+    if (tabIdMode === CompatibleTabIdMode.Fake_9x6) {
+        return `tabid=999999&client_id=${clientId}`
+    } else if (tabIdMode === CompatibleTabIdMode.Off) {
+        return `client_id=${clientId}`
+    }
+
+    return null
+}
+
 export async function removeRequestHandleRules ()
 {
     const oldRules = await chrome.declarativeNetRequest.getDynamicRules();
@@ -125,6 +141,9 @@ export function installLikeOptionsChangedListener()
             if (newValue?.activeServerInfo?.clientId !== oldValue?.activeServerInfo?.clientId) {
                 rebuild = true
                 console.debug('[RH] clientId onChanged', newValue?.activeServerInfo?.clientId, oldValue?.activeServerInfo?.clientId)
+            } else if (newValue?.defaultTabIdMode !== oldValue?.defaultTabIdMode) {
+                rebuild = true
+                console.debug('[RH] defaultTabIdMode onChanged', newValue?.defaultTabIdMode, oldValue?.defaultTabIdMode)
             }
         }
         if ('enableListen' in values) {

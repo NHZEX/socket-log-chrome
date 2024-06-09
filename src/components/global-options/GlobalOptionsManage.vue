@@ -83,7 +83,7 @@ defineExpose({
       label-width="auto"
       style="max-width: 600px"
   >
-    <n-form-item label="默认 TabId 传参模式">
+    <n-form-item label="TabId 默认传参模式">
       <n-radio-group v-model:value="formData.defaultTabIdMode">
         <n-radio value="off">不传递（新版接收端推荐）</n-radio>
         <n-radio value="fake-9x6">虚拟（999999）</n-radio>

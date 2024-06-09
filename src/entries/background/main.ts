@@ -1,4 +1,4 @@
-import {migrateSetting} from "~/utils/migrate-setting"
+import {migrateSetting} from "./MigrateSetting"
 import {installLikeOptionsChangedListener, reinstallRequestHandleRules} from './RequestHandle'
 import {Client} from "./ListenerClient"
 import {
@@ -24,7 +24,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     } else if (reason === 'update') {
         // 执行配置迁移
         setTimeout(async () => {
-            await migrateSetting(details!.previousVersion)
+            await migrateSetting(details?.previousVersion ?? '0.0.0')
         }, 0)
     }
     if (reason === 'install' || reason === 'update' || reason === 'chrome_update') {

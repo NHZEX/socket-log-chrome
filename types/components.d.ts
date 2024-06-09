@@ -38,7 +38,6 @@ declare module 'vue' {
     NTabPane: typeof import('naive-ui')['NTabPane']
     NTabs: typeof import('naive-ui')['NTabs']
     NThing: typeof import('naive-ui')['NThing']
-    PopupOptions: typeof import('./../src/components/popup-options/PopupOptions.vue')['default']
     PopupOptionsV2: typeof import('./../src/components/popup-options/PopupOptionsV2.vue')['default']
     ServerCollectionManage: typeof import('./../src/components/server-manage/ServerCollectionManage.vue')['default']
     SocketServerEditor: typeof import('./../src/components/server-manage/SocketServerEditor.vue')['default']

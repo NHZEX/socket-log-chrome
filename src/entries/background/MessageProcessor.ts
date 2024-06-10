@@ -92,7 +92,7 @@ class MessageProcessor {
                 return false
               }
             } else {
-              e2eConfig = (await getEndToEndRepository()).getDefaultE2EConfig()
+              e2eConfig = (await getEndToEndRepository()).getDefaultConfig()
               console.debug('尝试获取默认 e2e', e2eConfig)
               if (e2eConfig === undefined) {
                 return false

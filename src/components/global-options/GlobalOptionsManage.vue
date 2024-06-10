@@ -5,7 +5,7 @@ import {initialize, saveLocalOptions, useGlobalOptionsStore} from "~/stores/Glob
 import {useMessage} from 'naive-ui'
 import type {SocketLogOptions} from "~types/socket-log.options";
 import {CompatibleTabIdMode} from "~/enum/socket-log-options";
-import {createRandomString} from "~/utils/helper";
+import {clipboardWriteText, createRandomString} from "~/utils/helper";
 import {isEqual} from "radash";
 
 initialize()
@@ -48,15 +48,7 @@ const onCopy_e2eKey_hit = ref<{
   timer: null,
 })
 const onCopy_e2eKey = async () => {
-  if (!await chrome.permissions.contains({
-    permissions: ['clipboardWrite']
-  })) {
-    await chrome.permissions.request({
-      permissions: ['clipboardWrite'],
-      origins: []
-    });
-  }
-  await navigator.clipboard.writeText(formData.value.defaultE2EConfig.key)
+  await clipboardWriteText(formData.value.defaultE2EConfig.key)
   if (onCopy_e2eKey_hit.value.timer) {
     clearTimeout(onCopy_e2eKey_hit.value.timer)
   }

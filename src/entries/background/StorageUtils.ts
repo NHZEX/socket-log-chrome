@@ -155,7 +155,7 @@ class EndToEndRepository implements IEndToEndRepository {
     return this.e2eConfigCollection.get(id)
   }
 
-  public getDefaultE2EConfig () {
+  public getDefaultConfig () {
     return this.defaultE2EConfigEntity
   }
 

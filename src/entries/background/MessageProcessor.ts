@@ -1,6 +1,9 @@
 import {notifications,} from "~/utils/helper";
 import {saveStatusValues} from "~/stores/StatusStore";
 
+const addPrefixAscii = 'SL-E2E_'
+const addPrefixBinary = (new TextEncoder().encode(addPrefixAscii))
+
 export
 class MessageProcessor {
 
@@ -18,11 +21,7 @@ class MessageProcessor {
     async loadE2EConfig (clientId: string, config: { key: string })
     {
         this.#clientId = clientId
-        const addContent = new TextEncoder().encode(`SL-E2E_${this.#clientId}`)
-        this.#aseAdd = await self.crypto.subtle.digest(
-            'SHA-256',
-            addContent.buffer
-        )
+        this.#aseAdd = await this.#resolveAdditionalData(this.#clientId)
 
         if (config?.key && config.key.length >= 8) {
             const keyBinary = new TextEncoder().encode(config.key)
@@ -64,6 +63,25 @@ class MessageProcessor {
         })
     }
 
+    async #resolveAdditionalData(content: string|ArrayBuffer)
+    {
+        let addContent
+        if (content instanceof ArrayBuffer) {
+            const body = new Uint8Array(content)
+            const prefix = addPrefixBinary
+            const result = new Uint8Array(body.length + prefix.length)
+            result.set(prefix, 0);
+            result.set(body, prefix.length);
+            addContent = result.buffer
+        } else {
+            addContent = new TextEncoder().encode(`${addPrefixAscii}${content}`).buffer
+        }
+        return  await self.crypto.subtle.digest(
+            'SHA-256',
+            addContent
+        )
+    }
+
     async parseBinaryMessage (binary: ArrayBuffer): Promise<string | false>
     {
         if (binary.byteLength < 2) {
@@ -75,26 +93,40 @@ class MessageProcessor {
             // 不可处理二进制
             return false
         }
-        console.debug(binary)
+        console.debug('binary', binary)
         const flags = dv.getUint16(2)
         const isCompress = (flags & 0x0001) !== 0
         const isEncryption = (flags & 0x0002) !== 0
-        console.debug({
-            flags,
-            isCompress,
-            isEncryption,
-        })
+        const useE2EId = (flags & 0x0004) !== 0
 
         if (isEncryption && !this.#enableE2E) {
             return false
         }
 
+        let e2eId: ArrayBuffer|undefined
+
+        if (useE2EId) {
+            const useE2ELen = useE2EId ? dv.getUint8(4) : 0
+            e2eId = binary.slice(4 + 1, 4 + 1 + useE2ELen)
+            binary = binary.slice(4 + 1 + useE2ELen)
+        } else {
+            binary = binary.slice(4)
+        }
+
+        console.debug({
+            flags,
+            isCompress,
+            isEncryption,
+            useE2EId,
+            e2eId,
+        })
+
         let plaintext
         if (isEncryption) {
             try {
-                plaintext = await this.decryptMessage(binary.slice(4))
+                plaintext = await this.#decryptMessage(binary, { e2eId })
                 this.#e2eErrorCount = 0
-                console.debug(plaintext)
+                console.debug('plaintext', plaintext)
             } catch (e) {
                 this.#e2eErrorCount++
                 console.warn('decryptMessage fail')
@@ -125,7 +157,7 @@ class MessageProcessor {
                     throw new Error('decompress failed, writer close error: ' + e)
                 })
                 plaintext = await new Response(ds.readable).arrayBuffer();
-                console.debug(plaintext)
+                console.debug('decompression', plaintext)
             } catch (e) {
                 console.warn('decompressionMessage fail')
                 console.dir(e)
@@ -152,7 +184,7 @@ class MessageProcessor {
         }
     }
 
-    async decryptMessage (binary: ArrayBuffer): Promise<ArrayBuffer | null> {
+    async #decryptMessage (binary: ArrayBuffer, options: { e2eId?: ArrayBuffer }): Promise<ArrayBuffer | null> {
         if (this.#aseKey === null) {
             return null
         }
@@ -160,11 +192,15 @@ class MessageProcessor {
         const iv = binary.slice(0, 12)
         const ciphertext = binary.slice(12)
 
+        const additionalData = options.e2eId !== undefined
+            ? (await this.#resolveAdditionalData(options.e2eId))
+            : this!.#aseAdd
+
         return await self.crypto.subtle.decrypt(
             {
                 name: "AES-GCM",
                 iv,
-                additionalData: this!.#aseAdd,
+                additionalData,
                 tagLength: 128,
             },
             this.#aseKey,

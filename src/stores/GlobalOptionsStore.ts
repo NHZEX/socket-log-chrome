@@ -2,12 +2,12 @@ import {defineStore} from 'pinia'
 import {ref} from "vue";
 import store from "./index"
 import {
-    ClientEndToEndConfig,
-    SocketAddress,
-    SocketClientId,
-    SocketEnableClientHeartbeat,
-    SocketEnableListen,
-    SocketLogOptions
+  ClientEndToEndConfig,
+  SocketAddress,
+  SocketClientId,
+  SocketEnableClientHeartbeat,
+  SocketEnableListen,
+  SocketLogOptions
 } from "~types/socket-log.options";
 import {CompatibleTabIdMode} from "~/enum/socket-log-options";
 import EventEmitter from "eventemitter3";
@@ -39,7 +39,6 @@ export const useGlobalOptionsStore = defineStore('global-options', () => {
     const clientId = ref<SocketClientId>('')
     const enableListen = ref<SocketEnableListen>(false)
     const enableClientHeartbeat = ref<SocketEnableClientHeartbeat>(false)
-    const e2eConfig = ref<ClientEndToEndConfig>(DEFAULT_E2E_CONFIG_VALUE)
 
     const options = ref<SocketLogOptions>(DEFAULT_SOCKET_LOG_OPTIONS_VALUE)
 
@@ -65,7 +64,6 @@ export const useGlobalOptionsStore = defineStore('global-options', () => {
         clientId,
         enableListen,
         enableClientHeartbeat,
-        e2eConfig,
         options,
         onReady,
         saveOption,

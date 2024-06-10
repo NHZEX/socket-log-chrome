@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, ref, toRaw} from "vue";
+import {computed, ref, toRaw, watch} from "vue";
 import type {SocketServerItem} from "~types/socket-log.options";
 import {ClientIdParamMode, ClientIdParamModeLabel} from "~/enum/socket-log-options";
 import type {FormInst, FormItemRule} from "naive-ui";
@@ -145,7 +145,7 @@ const onSave = () => {
   })
 }
 
-const onShow = (value: boolean) => {
+watch(show, (value: boolean) => {
   if (!value) {
     formData.value = structuredClone(DEFAULT_FORM_DATA)
     urlForm.value = {
@@ -155,7 +155,7 @@ const onShow = (value: boolean) => {
     formRef.value?.restoreValidation()
     editOptions.value = structuredClone(DEFAULT_EDIT_OPTIONS)
   }
-}
+})
 
 const parseUrl = (url: string): IUrlData => {
 
@@ -202,7 +202,6 @@ defineExpose({
     :title="title"
     :show-icon="false"
     style="min-width: 500px"
-    :on-update-show="onShow"
 >
   <n-form
       ref="formRef"

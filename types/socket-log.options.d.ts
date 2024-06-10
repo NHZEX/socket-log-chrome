@@ -23,7 +23,9 @@ interface ClientEndToEndConfig {
 }
 
 interface ClientEndToEndConfigEntity {
+  id: string,
   key: CryptoKey,
+  additional: ArrayBuffer,
 }
 
 interface SocketLogOptions {

@@ -1,16 +1,15 @@
 import {
-    badge_error_bright,
-    badge_error_destroy,
-    badge_normal_bright,
-    badge_normal_destroy,
-    disable_icon,
-    enable_icon,
-    getChromeMajorVersion,
-    notifications,
+  badge_error_bright,
+  badge_error_destroy,
+  badge_normal_bright,
+  badge_normal_destroy,
+  disable_icon,
+  enable_icon,
+  getChromeMajorVersion,
+  notifications,
 } from "~/utils/helper";
 import {MessageProcessor} from "./MessageProcessor";
 import {getGlobalOptionsReader} from "~/entries/background/StorageUtils";
-import {ClientEndToEndConfig} from "~types/socket-log.options";
 import {saveStatusValues} from "~/stores/StatusStore";
 
 export const LinkHoldAlarmName = 'listener-link-hold'
@@ -112,9 +111,7 @@ export class Client {
         await saveStatusValues({
             clientStatusMessage: '服务连接中',
         })
-        if (!(options?.isAutoReconnection ?? false)) {
-            await this.e2eReload(globalOptionsReader.defaultE2EConfig)
-        }
+
         const socket = new WebSocket(address);
         socket.binaryType = 'arraybuffer'
 
@@ -144,14 +141,6 @@ export class Client {
 
         await this.installLinkHoldAlarm()
         this.#ws = socket;
-    }
-
-    async e2eReload (options: ClientEndToEndConfig) {
-        console.info('[e2e] reload')
-        await this.#messageProcessor.loadE2EConfig(
-            this.#clientId,
-            options,
-        )
     }
 
     #heartbeatBoot () {

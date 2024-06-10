@@ -1,4 +1,4 @@
-import {isEqual, isString} from "radash";
+import {debounce, isEqual, isString} from "radash";
 import {
   ActiveServerInfo,
   ClientEndToEndConfig,
@@ -8,6 +8,8 @@ import {
 import {ClientIdParamMode, CompatibleTabIdMode} from "~/enum/socket-log-options";
 import {listenerServerCollectionChanged} from "~/stores/ServerCollectionStore";
 import {restartClientConnection} from "~/entries/background/main";
+import EventEmitter from "eventemitter3";
+import {buildAdditionalData} from "~/entries/background/MessageProcessor";
 
 interface OptionsReaderConstructorParams {
     options?: SocketLogOptions,
@@ -91,8 +93,10 @@ export interface IEndToEndRepository {
 
 class EndToEndRepository implements IEndToEndRepository {
 
+  private static textDecoder = new TextDecoder("utf-8", {fatal: true})
   private e2eConfigCollection!: E2EConfigEntityCollection
-  private textDecoder = new TextDecoder("utf-8", {fatal: true})
+  private defaultE2EConfigEntity?: ClientEndToEndConfigEntity
+  private eventDispatch = new EventEmitter()
 
   private async buildDecryptKey (key: string) {
     const keyBinary = new TextEncoder().encode(key)
@@ -111,6 +115,20 @@ class EndToEndRepository implements IEndToEndRepository {
     )
   }
 
+  public async setDefault (clientId?: string, config?: ClientEndToEndConfig) {
+    if (clientId === undefined || config === undefined || config!.key === '') {
+      this.defaultE2EConfigEntity = undefined
+      return
+    }
+
+    this.defaultE2EConfigEntity = {
+      id: clientId,
+      key: await this.buildDecryptKey(config!.key),
+      additional: await buildAdditionalData(clientId)
+    }
+    this.triggerChanged()
+  }
+
   public async setCollection (items: ClientEndToEndConfig[]) {
     const collection: E2EConfigEntityCollection = new Map()
     for (const item of items) {
@@ -118,10 +136,13 @@ class EndToEndRepository implements IEndToEndRepository {
         continue
       }
       collection.set(item!.id, {
+        id: item.id,
         key: await this.buildDecryptKey(item!.key),
+        additional: await buildAdditionalData(item.id)
       })
     }
     this.e2eConfigCollection = collection
+    this.triggerChanged()
   }
 
   public findConfig (id: string|ArrayBuffer): ClientEndToEndConfigEntity|undefined {
@@ -129,9 +150,37 @@ class EndToEndRepository implements IEndToEndRepository {
       return undefined
     }
     if (id instanceof ArrayBuffer) {
-      id = this.textDecoder.decode(id)
+      id = EndToEndRepository.textDecoder.decode(id)
     }
     return this.e2eConfigCollection.get(id)
+  }
+
+  public getDefaultE2EConfig () {
+    return this.defaultE2EConfigEntity
+  }
+
+  private _triggerChanged () {
+    const enable = this.defaultE2EConfigEntity !== undefined || this.e2eConfigCollection.size > 0
+    console.debug('_triggerChanged', {
+      defaultE2EConfigEntity: this.defaultE2EConfigEntity !== undefined,
+      e2eConfigCollection: this.e2eConfigCollection.size,
+    })
+
+    this.eventDispatch.emit('changed', {
+      enable,
+    })
+  }
+
+  private triggerChanged = debounce({
+    delay: 100,
+  }, () => this._triggerChanged())
+
+  public onChanged (fn: (event: { enable: boolean }) => void) {
+    this.eventDispatch.addListener('changed', fn)
+
+    if (EndToEndRepositoryInstance !== undefined) {
+      this.triggerChanged()
+    }
   }
 }
 
@@ -164,10 +213,17 @@ export async function getEndToEndRepository() {
 
   const values = await chrome.storage.local.get([
     'endToEndCollection',
+    'options',
   ])
 
   EndToEndRepositoryInstance = new EndToEndRepository()
   await EndToEndRepositoryInstance.setCollection(values?.endToEndCollection ?? [])
+
+  const options = values.options as SocketLogOptions;
+  await EndToEndRepositoryInstance.setDefault(
+    options?.activeServerInfo?.clientId,
+    options?.defaultE2EConfig,
+  )
 
   return EndToEndRepositoryInstance
 }
@@ -230,13 +286,31 @@ export function installActiveServerInfoSync(): void {
 
 
 export function installStorageSync() {
-  chrome.storage.local.onChanged.addListener(async ({ endToEndCollection }) => {
+  chrome.storage.local.onChanged.addListener(async ({ endToEndCollection, options }) => {
+    if (EndToEndRepositoryInstance === undefined) {
+      return
+    }
     if (endToEndCollection !== undefined) {
       const { newValue, oldValue }= endToEndCollection
 
-      console.debug('endToEndCollection.onChanged', newValue, oldValue)
-      if (EndToEndRepositoryInstance instanceof EndToEndRepository) {
-        await EndToEndRepositoryInstance.setCollection(newValue)
+      console.debug('EndToEndCollection.onChanged', newValue, oldValue)
+      await EndToEndRepositoryInstance.setCollection(newValue)
+    }
+    if (options !== undefined) {
+      const { newValue, oldValue }: {
+        newValue?: SocketLogOptions,
+        oldValue?: SocketLogOptions
+      } = options
+
+      if (
+        (newValue?.defaultE2EConfig?.key !== oldValue?.defaultE2EConfig?.key)
+        || (newValue?.activeServerInfo?.clientId !== oldValue?.activeServerInfo?.clientId)
+      ) {
+        console.debug('GlobalOptions.onChanged', newValue, oldValue)
+        await EndToEndRepositoryInstance.setDefault(
+          newValue?.activeServerInfo?.clientId,
+          newValue?.defaultE2EConfig,
+        )
       }
     }
   })

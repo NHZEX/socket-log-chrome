@@ -1,11 +1,7 @@
 import {migrateSetting} from "./MigrateSetting"
 import {installLikeOptionsChangedListener, reinstallRequestHandleRules} from './RequestHandle'
 import {Client} from "./ListenerClient"
-import {
-    clearGlobalOptionsReaderInstance,
-    installActiveServerInfoSync,
-    listenerGlobalOptionsChanged
-} from "./StorageUtils"
+import {clearGlobalOptionsReaderInstance, installActiveServerInfoSync} from "./StorageUtils"
 import DebugHelper from './DebugHelper'
 
 self.addEventListener('install', event => {
@@ -58,10 +54,6 @@ chrome.runtime.onMessage.addListener((message : { event: string }, sender, sendR
 installLikeOptionsChangedListener()
 
 const wsc = new Client()
-
-listenerGlobalOptionsChanged(async (options) => {
-    await wsc.e2eReload(options.defaultE2EConfig)
-})
 
 installActiveServerInfoSync()
 

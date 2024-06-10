@@ -1,6 +1,7 @@
 import {notifications,} from "~/utils/helper";
 import {saveStatusValues} from "~/stores/StatusStore";
 import {getEndToEndRepository} from "~/entries/background/StorageUtils";
+import {ClientEndToEndConfigEntity} from "~types/socket-log.options";
 
 const addPrefixAscii = 'SL-E2E_'
 const addPrefixBinary = (new TextEncoder().encode(addPrefixAscii))
@@ -8,79 +9,38 @@ const addPrefixBinary = (new TextEncoder().encode(addPrefixAscii))
 export
 class MessageProcessor {
 
-    #clientId: string | null = null
-
-    #aseKey: CryptoKey | null = null
-
-    #aseAdd?: ArrayBuffer
     #enableE2E: boolean = false
     #e2eErrorCount: number = 0
 
     constructor () {
+      getEndToEndRepository().then(e => {
+        e.onChanged(e => this.#reload(e))
+      })
     }
 
-    async loadE2EConfig (clientId: string, config: { key: string })
-    {
-        this.#clientId = clientId
-        this.#aseAdd = await this.#resolveAdditionalData(this.#clientId)
-
-        if (config?.key && config.key.length >= 8) {
-            const keyBinary = new TextEncoder().encode(config.key)
-            const keyHash = await self.crypto.subtle.digest(
-                'SHA-256',
-                keyBinary.buffer
-            )
-            this.#aseKey = await self.crypto.subtle.importKey(
-                'raw',
-                keyHash,
-                {
-                    name: 'AES-GCM',
-                },
-                true,
-                ['decrypt']
-            )
-            this.#enableE2E = true
-            await saveStatusValues({
-                e2eStatusMessage: '端到端已激活',
-            })
-            console.info('[e2e] is enable')
-        } else {
-            this.#aseKey = null
-            this.#enableE2E = false
-            await saveStatusValues({
-                e2eStatusMessage: '',
-            })
-        }
-        this.#e2eErrorCount = 0
+    async #reload(event: { enable: boolean }) {
+      console.debug('[e2e] reload Options', event)
+      this.#enableE2E = event.enable
+      this.#e2eErrorCount = 0
+      if (this.#enableE2E) {
+        await saveStatusValues({
+          e2eStatusMessage: '端到端已激活',
+        })
+        console.info('[e2e] is enable')
+      } else {
+        await saveStatusValues({
+          e2eStatusMessage: '',
+        })
+      }
     }
 
-    async disableE2E ()
+    async #disableE2E ()
     {
         console.info('[e2e] is soft disable')
-        this.#aseKey = null
         this.#enableE2E = false
         await saveStatusValues({
             e2eStatusMessage: '端到端已禁用',
         })
-    }
-
-    async #resolveAdditionalData(content: string|ArrayBuffer)
-    {
-        let addContent
-        if (content instanceof ArrayBuffer) {
-            const body = new Uint8Array(content)
-            const prefix = addPrefixBinary
-            const result = new Uint8Array(body.length + prefix.length)
-            result.set(prefix, 0);
-            result.set(body, prefix.length);
-            addContent = result.buffer
-        } else {
-            addContent = new TextEncoder().encode(`${addPrefixAscii}${content}`).buffer
-        }
-        return  await self.crypto.subtle.digest(
-            'SHA-256',
-            addContent
-        )
     }
 
     async parseBinaryMessage (binary: ArrayBuffer): Promise<string | false>
@@ -124,20 +84,26 @@ class MessageProcessor {
 
         let plaintext
         if (isEncryption) {
-            let e2eKey
+            let e2eConfig: ClientEndToEndConfigEntity|undefined
             if (e2eId !== undefined) {
-              e2eKey = (await getEndToEndRepository()).findConfig(e2eId)?.key
-              if (e2eKey === undefined) {
+              e2eConfig = (await getEndToEndRepository()).findConfig(e2eId)
+              if (e2eConfig === undefined) {
                 console.debug('已经设置 e2eId, 但找不到关联的密钥', e2eId)
+                return false
+              }
+            } else {
+              e2eConfig = (await getEndToEndRepository()).getDefaultE2EConfig()
+              console.debug('尝试获取默认 e2e', e2eConfig)
+              if (e2eConfig === undefined) {
                 return false
               }
             }
             try {
-                plaintext = await this.#decryptMessage(binary, { e2eId, e2eKey })
+                plaintext = await this.#decryptMessage(binary, { e2eId, e2eConfig })
                 this.#e2eErrorCount = 0
                 console.debug('plaintext', plaintext)
             } catch (e) {
-                // this.#e2eErrorCount++ // todo
+                this.#e2eErrorCount++
                 console.warn('decryptMessage fail')
                 console.dir(e)
                 notifications(
@@ -145,7 +111,7 @@ class MessageProcessor {
                     `加密内容解密失败 (${e})`
                 )
                 if (this.#e2eErrorCount >= 5) {
-                    await this.disableE2E()
+                    await this.#disableE2E()
                     notifications(
                         '端到端加密通信已经被禁用',
                         `解密失败次数达到阈值，端到端触发禁用，重新连接或者更新密钥重新激活该功能。`
@@ -195,23 +161,13 @@ class MessageProcessor {
 
     async #decryptMessage (
       binary: ArrayBuffer,
-      options: { e2eId?: ArrayBuffer, e2eKey?: CryptoKey }
+      options: { e2eId?: ArrayBuffer, e2eConfig: ClientEndToEndConfigEntity }
     ): Promise<ArrayBuffer | null> {
-        if (this.#aseKey === null) {
-            return null
-        }
-        if (options.e2eKey === undefined) {
-            return null
-        }
+        const key = options.e2eConfig.key;
+        const additionalData = options.e2eConfig.additional;
 
-        const iv = binary.slice(0, 12)
-        const ciphertext = binary.slice(12)
-
-        const additionalData = options.e2eId !== undefined
-            ? (await this.#resolveAdditionalData(options.e2eId))
-            : this!.#aseAdd
-
-        const key = options.e2eKey === undefined ? this.#aseKey as CryptoKey : options.e2eKey
+        const iv = binary.slice(0, 12);
+        const ciphertext = binary.slice(12);
 
         return await self.crypto.subtle.decrypt(
             {
@@ -224,4 +180,23 @@ class MessageProcessor {
             ciphertext,
         );
     }
+}
+
+export async function buildAdditionalData(content: string|ArrayBuffer)
+{
+  let addContent
+  if (content instanceof ArrayBuffer) {
+    const body = new Uint8Array(content)
+    const prefix = addPrefixBinary
+    const result = new Uint8Array(body.length + prefix.length)
+    result.set(prefix, 0);
+    result.set(body, prefix.length);
+    addContent = result.buffer
+  } else {
+    addContent = new TextEncoder().encode(`${addPrefixAscii}${content}`).buffer
+  }
+  return await self.crypto.subtle.digest(
+    'SHA-256',
+    addContent
+  )
 }

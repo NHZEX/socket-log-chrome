@@ -93,12 +93,12 @@ export interface IEndToEndRepository {
 
 class EndToEndRepository implements IEndToEndRepository {
 
-  private static textDecoder = new TextDecoder("utf-8", {fatal: true})
-  private e2eConfigCollection!: E2EConfigEntityCollection
-  private defaultE2EConfigEntity?: ClientEndToEndConfigEntity
-  private eventDispatch = new EventEmitter()
+  static #textDecoder = new TextDecoder("utf-8", {fatal: true})
+  #e2eConfigCollection!: E2EConfigEntityCollection
+  #defaultE2EConfigEntity?: ClientEndToEndConfigEntity
+  #eventDispatch = new EventEmitter()
 
-  private async buildDecryptKey (key: string) {
+  async #buildDecryptKey (key: string) {
     const keyBinary = new TextEncoder().encode(key)
     const keyHash = await self.crypto.subtle.digest(
       'SHA-256',
@@ -117,16 +117,16 @@ class EndToEndRepository implements IEndToEndRepository {
 
   public async setDefault (clientId?: string, config?: ClientEndToEndConfig) {
     if (clientId === undefined || config === undefined || config!.key === '') {
-      this.defaultE2EConfigEntity = undefined
+      this.#defaultE2EConfigEntity = undefined
       return
     }
 
-    this.defaultE2EConfigEntity = {
+    this.#defaultE2EConfigEntity = {
       id: clientId,
-      key: await this.buildDecryptKey(config!.key),
+      key: await this.#buildDecryptKey(config!.key),
       additional: await buildAdditionalData(clientId)
     }
-    this.triggerChanged()
+    this.#triggerChanged()
   }
 
   public async setCollection (items: ClientEndToEndConfig[]) {
@@ -137,49 +137,49 @@ class EndToEndRepository implements IEndToEndRepository {
       }
       collection.set(item!.id, {
         id: item.id,
-        key: await this.buildDecryptKey(item!.key),
+        key: await this.#buildDecryptKey(item!.key),
         additional: await buildAdditionalData(item.id)
       })
     }
-    this.e2eConfigCollection = collection
-    this.triggerChanged()
+    this.#e2eConfigCollection = collection
+    this.#triggerChanged()
   }
 
   public findConfig (id: string|ArrayBuffer): ClientEndToEndConfigEntity|undefined {
-    if (this.e2eConfigCollection === undefined) {
+    if (this.#e2eConfigCollection === undefined) {
       return undefined
     }
     if (id instanceof ArrayBuffer) {
-      id = EndToEndRepository.textDecoder.decode(id)
+      id = EndToEndRepository.#textDecoder.decode(id)
     }
-    return this.e2eConfigCollection.get(id)
+    return this.#e2eConfigCollection.get(id)
   }
 
   public getDefaultConfig () {
-    return this.defaultE2EConfigEntity
+    return this.#defaultE2EConfigEntity
   }
 
-  private _triggerChanged () {
-    const enable = this.defaultE2EConfigEntity !== undefined || this.e2eConfigCollection.size > 0
+  #_triggerChanged () {
+    const enable = this.#defaultE2EConfigEntity !== undefined || this.#e2eConfigCollection.size > 0
     console.debug('_triggerChanged', {
-      defaultE2EConfigEntity: this.defaultE2EConfigEntity !== undefined,
-      e2eConfigCollection: this.e2eConfigCollection.size,
+      defaultE2EConfigEntity: this.#defaultE2EConfigEntity !== undefined,
+      e2eConfigCollection: this.#e2eConfigCollection.size,
     })
 
-    this.eventDispatch.emit('changed', {
+    this.#eventDispatch.emit('changed', {
       enable,
     })
   }
 
-  private triggerChanged = debounce({
+  #triggerChanged = debounce({
     delay: 100,
-  }, () => this._triggerChanged())
+  }, () => this.#_triggerChanged())
 
   public onChanged (fn: (event: { enable: boolean }) => void) {
-    this.eventDispatch.addListener('changed', fn)
+    this.#eventDispatch.addListener('changed', fn)
 
     if (EndToEndRepositoryInstance !== undefined) {
-      this.triggerChanged()
+      this.#triggerChanged()
     }
   }
 }

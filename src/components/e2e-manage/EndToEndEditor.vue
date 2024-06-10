@@ -24,11 +24,13 @@ const DEFAULT_FORM_DATA: IFormData = {
   id: '',
   name: '',
   key: '',
+  disable: false,
 }
 
 interface IFormData extends ClientEndToEndConfig {
   id: string
   name: string
+  disable: boolean
 }
 
 const nMessage = useMessage()
@@ -54,7 +56,7 @@ const formRules: { [key in keyof IFormData]?: FormItemRule | FormItemRule[] } = 
       if (value.length === 0) {
         return new Error(`不能为空`)
       }
-      if (endToEndConfigCollection.find(value) !== null) {
+      if (!isEdit.value && endToEndConfigCollection.find(value) !== null) {
         return new Error(`已经存在这样的ID: ${value}，必须是唯一的`)
       }
       return true
@@ -183,6 +185,9 @@ defineExpose({
           <n-button @click="onNewKey">生成</n-button>
           <n-button @click="onCopyKey" :disabled="!formData.key">复制</n-button>
         </n-input-group>
+      </n-form-item>
+      <n-form-item label="禁用配置" path="disable">
+        <n-switch v-model:value="formData.disable"></n-switch>
       </n-form-item>
       <div style="display: flex; justify-content: flex-end">
         <n-button round type="primary" @click="onSave">保存</n-button>

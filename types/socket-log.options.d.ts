@@ -19,6 +19,7 @@ interface ClientEndToEndConfig {
     id?: string,
     name?: string,
     key: string,
+    disable?: boolean,
 }
 
 interface SocketLogOptions {

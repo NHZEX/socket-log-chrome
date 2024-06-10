@@ -45,7 +45,7 @@ const remove = async (item: ClientEndToEndConfig) => {
         <n-thing>
           <template #header>
             <h4 style="margin: 0.25em 0">
-              #{{ index }} {{ item.name }}
+              #{{ index }} {{ item.name }} {{ item.disable === true ? '[已禁用]' : '' }}
             </h4>
           </template>
           <n-descriptions

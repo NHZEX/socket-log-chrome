@@ -40,7 +40,7 @@ const serverCollection = useServerCollection()
 const editOptions = ref<EditOptions>(DEFAULT_EDIT_OPTIONS)
 const show = ref(false)
 const title = computed(() => {
-  return editOptions.value
+  return editOptions.value.clone
       ? '克隆配置'
       : (isEdit.value ? '编辑服务器' : '新增服务器')
 })

@@ -22,6 +22,10 @@ interface ClientEndToEndConfig {
     disable?: boolean,
 }
 
+interface ClientEndToEndConfigEntity {
+  key: CryptoKey,
+}
+
 interface SocketLogOptions {
     defaultTabIdMode: CompatibleTabIdMode,
     defaultE2EConfig: ClientEndToEndConfig,

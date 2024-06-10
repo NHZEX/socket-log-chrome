@@ -1,5 +1,6 @@
 import {notifications,} from "~/utils/helper";
 import {saveStatusValues} from "~/stores/StatusStore";
+import {getEndToEndRepository} from "~/entries/background/StorageUtils";
 
 const addPrefixAscii = 'SL-E2E_'
 const addPrefixBinary = (new TextEncoder().encode(addPrefixAscii))
@@ -123,12 +124,20 @@ class MessageProcessor {
 
         let plaintext
         if (isEncryption) {
+            let e2eKey
+            if (e2eId !== undefined) {
+              e2eKey = (await getEndToEndRepository()).findConfig(e2eId)?.key
+              if (e2eKey === undefined) {
+                console.debug('已经设置 e2eId, 但找不到关联的密钥', e2eId)
+                return false
+              }
+            }
             try {
-                plaintext = await this.#decryptMessage(binary, { e2eId })
+                plaintext = await this.#decryptMessage(binary, { e2eId, e2eKey })
                 this.#e2eErrorCount = 0
                 console.debug('plaintext', plaintext)
             } catch (e) {
-                this.#e2eErrorCount++
+                // this.#e2eErrorCount++ // todo
                 console.warn('decryptMessage fail')
                 console.dir(e)
                 notifications(
@@ -184,8 +193,14 @@ class MessageProcessor {
         }
     }
 
-    async #decryptMessage (binary: ArrayBuffer, options: { e2eId?: ArrayBuffer }): Promise<ArrayBuffer | null> {
+    async #decryptMessage (
+      binary: ArrayBuffer,
+      options: { e2eId?: ArrayBuffer, e2eKey?: CryptoKey }
+    ): Promise<ArrayBuffer | null> {
         if (this.#aseKey === null) {
+            return null
+        }
+        if (options.e2eKey === undefined) {
             return null
         }
 
@@ -196,6 +211,8 @@ class MessageProcessor {
             ? (await this.#resolveAdditionalData(options.e2eId))
             : this!.#aseAdd
 
+        const key = options.e2eKey === undefined ? this.#aseKey as CryptoKey : options.e2eKey
+
         return await self.crypto.subtle.decrypt(
             {
                 name: "AES-GCM",
@@ -203,7 +220,7 @@ class MessageProcessor {
                 additionalData,
                 tagLength: 128,
             },
-            this.#aseKey,
+            key,
             ciphertext,
         );
     }

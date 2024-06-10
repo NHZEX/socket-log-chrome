@@ -7,6 +7,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    EndToEndEditor: typeof import('./../src/components/e2e-manage/EndToEndEditor.vue')['default']
+    EndToEndManage: typeof import('./../src/components/e2e-manage/EndToEndManage.vue')['default']
     GlobalOptionsManage: typeof import('./../src/components/global-options/GlobalOptionsManage.vue')['default']
     ListenerRuleManage: typeof import('./../src/components/listener-rule/ListenerRuleManage.vue')['default']
     NButton: typeof import('naive-ui')['NButton']

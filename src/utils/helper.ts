@@ -124,3 +124,15 @@ export function getChromeMajorVersion () {
     }
     return parseInt(result[1] ?? '0');
 }
+
+export async function clipboardWriteText (value: string) {
+  if (!await chrome.permissions.contains({
+    permissions: ['clipboardWrite']
+  })) {
+    await chrome.permissions.request({
+      permissions: ['clipboardWrite'],
+      origins: []
+    });
+  }
+  await navigator.clipboard.writeText(value)
+}

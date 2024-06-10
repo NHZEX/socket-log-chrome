@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import GlobalOptionsManage from "~/components/global-options/GlobalOptionsManage.vue";
 import {onBeforeMount, ref, watch} from "vue";
+import EndToEndManage from "~/components/e2e-manage/EndToEndManage.vue";
 
 const tabsCurrent = ref<string|undefined>()
 
@@ -43,6 +44,9 @@ onBeforeMount(async () => {
             <n-tab-pane name="listener-rule" tab="监听域名">
               <listener-rule-manage style="max-width: 800px"></listener-rule-manage>
             </n-tab-pane>
+              <n-tab-pane name="end2end-manage" tab="端到端配置">
+                  <end-to-end-manage style="max-width: 800px"></end-to-end-manage>
+              </n-tab-pane>
             <n-tab-pane name="global-options" tab="全局选项">
               <global-options-manage></global-options-manage>
             </n-tab-pane>

@@ -16,6 +16,8 @@ type SocketEnableClientHeartbeat = boolean
 type literalTrueOrFalse = 'on' | 'off'
 
 interface ClientEndToEndConfig {
+    id?: string,
+    name?: string,
     key: string,
 }
 

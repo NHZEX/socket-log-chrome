@@ -1,5 +1,8 @@
 # API远程日志实时打印扩展
 
+- [Chrome Web Store](https://chrome.google.com/webstore/detail/dblmfdbehbflmoallnmijodipmhhecad)
+- [Edge Web Store](https://microsoftedge.microsoft.com/addons/detail/mlemgckoeblpgiicidebmojniphjplbj)
+
 ### 支持特性
 
 - [x] 支持传输日志压缩（改进传输效率，尤其在日志体积较大时）

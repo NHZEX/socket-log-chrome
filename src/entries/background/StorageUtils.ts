@@ -25,8 +25,8 @@ class SocketLogOptionsReader implements SocketLogOptions {
         return this.#options
     }
 
-    get activeServerInfo (): ActiveServerInfo|undefined {
-        return this.#options?.activeServerInfo;
+    get activeServerInfo (): ActiveServerInfo {
+        return this.#options?.activeServerInfo ?? null;
     }
     get defaultE2EConfig (): ClientEndToEndConfig {
         return this.#options.defaultE2EConfig;

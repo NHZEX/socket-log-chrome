@@ -31,7 +31,7 @@ interface ClientEndToEndConfigEntity {
 interface SocketLogOptions {
     defaultTabIdMode: CompatibleTabIdMode,
     defaultE2EConfig: ClientEndToEndConfig,
-    activeServerInfo: ActiveServerInfo|undefined,
+    activeServerInfo: ActiveServerInfo,
 }
 
 interface SocketServerItem {

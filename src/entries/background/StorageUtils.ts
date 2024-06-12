@@ -26,7 +26,7 @@ class SocketLogOptionsReader implements SocketLogOptions {
     }
 
     get activeServerInfo (): ActiveServerInfo {
-        return this.#options.activeServerInfo;
+        return this.#options?.activeServerInfo;
     }
     get defaultE2EConfig (): ClientEndToEndConfig {
         return this.#options.defaultE2EConfig;
@@ -60,7 +60,7 @@ class SocketLogOptionsReader implements SocketLogOptions {
     }
 
     get clientId (): string {
-        return this.activeServerInfo!.clientId
+        return this.activeServerInfo?.clientId ?? ''
     }
 
     get addressUrl (): string {

@@ -93,7 +93,7 @@ export class Client {
 
         // 载入监听地址
         const address = globalOptionsReader.addressUrl;
-        this.#clientId = globalOptionsReader.clientId
+        this.#clientId = globalOptionsReader.clientId ?? ''
 
         console.info('connection to ' + address);
 

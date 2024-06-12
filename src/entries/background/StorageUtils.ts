@@ -25,7 +25,7 @@ class SocketLogOptionsReader implements SocketLogOptions {
         return this.#options
     }
 
-    get activeServerInfo (): ActiveServerInfo {
+    get activeServerInfo (): ActiveServerInfo|undefined {
         return this.#options?.activeServerInfo;
     }
     get defaultE2EConfig (): ClientEndToEndConfig {
@@ -56,14 +56,17 @@ class SocketLogOptionsReader implements SocketLogOptions {
     }
 
     get isEnableClientHeartbeat (): boolean {
-        return this.activeServerInfo!.socketHeartbeat;
+        return this.activeServerInfo?.socketHeartbeat ?? false;
     }
 
-    get clientId (): string {
-        return this.activeServerInfo?.clientId ?? ''
+    get clientId (): string|undefined {
+        return this.activeServerInfo?.clientId
     }
 
     get addressUrl (): string {
+        if (this.activeServerInfo === undefined) {
+          return ''
+        }
         const url = new URL(this.activeServerInfo!.url);
 
         switch (this.activeServerInfo?.clientIdParamMode) {

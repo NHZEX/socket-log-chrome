@@ -69,9 +69,7 @@ export class Client {
         }
     }
 
-    async init (options: {
-        isAutoReconnection?: boolean
-    } = {}) {
+    async init () {
         const globalOptionsReader = await getGlobalOptionsReader({
             reinitialize: true
         });
@@ -246,9 +244,7 @@ export class Client {
         }
         if (reconnection) {
             this.#reconnectionTimer = setTimeout(() => {
-                this.init({
-                    isAutoReconnection: true,
-                })
+                this.init()
             }, 2000);
         }
         await saveStatusValues({

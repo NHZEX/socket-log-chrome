@@ -61,10 +61,13 @@ export class Client {
     async alarmTriggerHandle(alarm: chrome.alarms.Alarm)
     {
         if (alarm.name === LinkHoldAlarmName) {
-            if (!this.isActive()) {
-                console.debug('监听非活跃状态，尝试激活')
-                await this.#onClone('服务已经关闭', false)
-                await this.init()
+            if (this.isActive()) {
+              // 当前激活，全部 icon 状态同步
+              enable_icon()
+            } else {
+              console.debug('监听非活跃状态，尝试激活')
+              await this.#onClone('服务已经关闭', false)
+              await this.init()
             }
         }
     }

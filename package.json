@@ -1,6 +1,6 @@
 {
   "name": "socketlog-plus",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "displayName": "SocketLog++",
   "author": "@auooru",
   "description": "Server API Remote Log Printing",

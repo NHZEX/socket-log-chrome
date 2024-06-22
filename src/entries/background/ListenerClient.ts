@@ -24,6 +24,8 @@ export class Client {
 
     #clientId!: string
 
+    #lastSendTab: chrome.tabs.Tab | undefined = undefined
+
     constructor () {
         this.#messageProcessor = new MessageProcessor()
     }
@@ -217,6 +219,9 @@ export class Client {
                 console.debug('即将推送 tabs: ', tabs, result)
                 const tab: chrome.tabs.Tab = tabs[0];
                 await this.#sendLogMessage(tab, result.logs)
+            } else if (this.#lastSendTab !== undefined) {
+                console.debug('无法找到可用 Tab，即将按最后访问 tab 尝试: ', this.#lastSendTab, result)
+                await this.#sendLogMessage(this.#lastSendTab, result.logs)
             }
         } finally {
             badge_normal_destroy();
@@ -226,7 +231,8 @@ export class Client {
     async #sendLogMessage (tab: chrome.tabs.Tab, message: object[], isRetry: boolean = false)
     {
         try {
-            await chrome.tabs.sendMessage(tab.id as number, message);
+            await chrome.tabs.sendMessage(tab.id!, message);
+            this.#lastSendTab = tab
         } catch (e) {
             console.warn('推送失败' + (isRetry ? '[retry]' : ''), {
                 e,
@@ -237,6 +243,11 @@ export class Client {
                 setTimeout(async () => {
                     await this.#sendLogMessage(tab, message, true)
                 }, 1000)
+            } else {
+              if (this.#lastSendTab?.id === tab.id) {
+                // 如果是相同的 tab 失败，则重置掉
+                this.#lastSendTab = undefined
+              }
             }
         }
     }

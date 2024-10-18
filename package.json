@@ -1,6 +1,6 @@
 {
   "name": "socketlog-plus",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "displayName": "SocketLog++",
   "author": "@auooru",
   "description": "Server API Remote Log Printing",
@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^8.57",
-    "@samrum/vite-plugin-web-extension": "^5.1.0",
+    "@samrum/vite-plugin-web-extension": "^5.1.1",
     "@types/chrome": "^0.0.268",
     "@types/lodash-es": "^4.17.12",
     "@types/webextension-polyfill": "^0.10.7",
